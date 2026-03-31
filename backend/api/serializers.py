@@ -15,10 +15,20 @@ class SignupSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
-        user = User.objects.create_user(
-            email=validated_data['email'],
-            full_name=validated_data['full_name'],
-            password=validated_data['password']
-        )
-        return user
+            # Remove confirm_password so we don't try to save it to the DB
+            validated_data.pop('confirm_password')
+            
+            # 1. Create the user object (but don't save to DB yet)
+            user = User(
+                email=validated_data['email'],
+                full_name=validated_data['full_name']
+                # Notice we leave 'password' out of here
+            )
+            
+            # 2. Use set_password() to securely hash the password
+            user.set_password(validated_data['password'])
+            
+            # 3. Save the user to the database
+            user.save()
+            
+            return user
