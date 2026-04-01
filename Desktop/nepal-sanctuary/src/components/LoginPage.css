@@ -1,0 +1,361 @@
+/* Login Container - Main wrapper for the entire login page */
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+/* Login Card - Main card that holds the form */
+.login-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 50px 40px;
+  width: 100%;
+  max-width: 450px;
+  animation: slideUp 0.5s ease-out;
+}
+
+/* Slide up animation for card */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header section styling */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Main title - "Nepal Sanctuary" */
+.main-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #003d82;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+/* Main subtitle */
+.main-subtitle {
+  font-size: 14px;
+  color: #777;
+  font-weight: 400;
+}
+
+/* Form section styling */
+.login-form {
+  width: 100%;
+}
+
+/* Form title - "Welcome Back" */
+.form-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+/* Form subtitle */
+.form-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* Form group - wrapper for each input field */
+.form-group {
+  margin-bottom: 24px;
+}
+
+/* Password header - flex layout for label and forgot password link */
+.password-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Label styling for form fields */
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* Password input wrapper - flex layout for input and toggle button */
+.password-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 8px;
+}
+
+/* Input field styling */
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+/* Password input field styling when in wrapper */
+.password-input-wrapper .input-field {
+  padding-right: 45px;
+}
+
+/* Input field hover state */
+.input-field:hover {
+  border-color: #bbb;
+  background-color: #fff;
+}
+
+/* Input field focus state */
+.input-field:focus {
+  outline: none;
+  border-color: #003d82;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.1);
+}
+
+/* Placeholder styling for input fields */
+.input-field::placeholder {
+  color: #aaa;
+}
+
+/* Toggle password button styling */
+.toggle-password-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+  margin-right: 8px;
+}
+
+/* Toggle password button hover state */
+.toggle-password-btn:hover {
+  opacity: 0.7;
+}
+
+/* Toggle password button active state */
+.toggle-password-btn:active {
+  opacity: 0.5;
+}
+
+/* Forgot password link */
+.forgot-password {
+  font-size: 12px;
+  color: #003d82;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* Forgot password hover state */
+.forgot-password:hover {
+  color: #002147;
+  text-decoration: underline;
+}
+
+/* Login button styling */
+.login-button {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: #003d82;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  letter-spacing: 0.3px;
+}
+
+/* Login button hover state */
+.login-button:hover {
+  background-color: #002555;
+  box-shadow: 0 6px 20px rgba(0, 61, 130, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Login button active state */
+.login-button:active {
+  transform: translateY(0);
+}
+
+/* Divider section styling */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 32px 0;
+  position: relative;
+}
+
+/* Divider text */
+.divider-text {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  width: 100%;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  background: white;
+  position: relative;
+  z-index: 1;
+}
+
+/* Google login button styling */
+.google-button {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Google button hover state */
+.google-button:hover {
+  background-color: #e8e8e8;
+  border-color: #bbb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Google button active state */
+.google-button:active {
+  transform: scale(0.98);
+}
+
+/* Google icon styling */
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Sign up section styling */
+.signup-section {
+  text-align: center;
+  margin-top: 24px;
+}
+
+/* Sign up text */
+.signup-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Sign up link styling */
+.signup-link {
+  color: #003d82;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+/* Sign up link hover state */
+.signup-link:hover {
+  color: #002147;
+  text-decoration: underline;
+}
+
+/* Footer section styling */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+/* Footer links */
+.footer-link {
+  font-size: 12px;
+  color: #999;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  margin: 0 8px;
+}
+
+/* Footer link hover state */
+.footer-link:hover {
+  color: #666;
+}
+
+/* Footer credit text */
+.footer-credit {
+  font-size: 11px;
+  color: #ccc;
+  letter-spacing: 1px;
+  margin-top: 8px;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+  .login-card {
+    padding: 35px 25px;
+  }
+
+  .main-title {
+    font-size: 26px;
+  }
+
+  .form-title {
+    font-size: 20px;
+  }
+
+  .label {
+    font-size: 11px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .footer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .footer-link {
+    margin: 0 6px;
+  }
+}
