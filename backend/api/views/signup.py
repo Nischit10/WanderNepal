@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import SignupSerializer
+from api.serializers import SignupSerializer
 
-class SignupView(APIView):  # <--- Make sure this name matches exactly
+class SignupView(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
