@@ -1,875 +1,420 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #fff; }
 
-  body {
-    font-family: 'Jost', sans-serif;
-    background: #0a0e1a;
-    color: #e8e0d0;
-    overflow-x: hidden;
-  }
-
-  /* NAV */
   .nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 24px 60px;
-    background: linear-gradient(to bottom, rgba(10,14,26,0.95), transparent);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 48px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
   }
-  .nav-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    letter-spacing: 1px;
-    color: #e8e0d0;
-    text-decoration: none;
-  }
-  .nav-links {
-    display: flex;
-    gap: 36px;
-    list-style: none;
-  }
-  .nav-links a {
-    color: #b0a898;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 300;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: color 0.3s;
-  }
-  .nav-links a:hover { color: #e8e0d0; }
-  .nav-btn {
-    background: transparent;
-    border: 1px solid rgba(232,224,208,0.4);
-    color: #e8e0d0;
-    padding: 10px 28px;
-    font-family: 'Jost', sans-serif;
-    font-size: 13px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 2px;
-  }
-  .nav-btn:hover {
-    background: rgba(232,224,208,0.1);
-    border-color: rgba(232,224,208,0.8);
-  }
+  .nav-logo { font-weight: 700; font-size: 16px; color: #1a1a1a; text-decoration: none; }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a { color: #444; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #1a6bff; }
+  .nav-actions { display: flex; gap: 12px; align-items: center; }
+  .btn-login { background: transparent; border: none; font-size: 14px; font-weight: 500; color: #444; cursor: pointer; padding: 8px 16px; }
+  .btn-signup { background: #1a6bff; color: white; border: none; padding: 9px 22px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-signup:hover { background: #0055ee; }
 
-  /* HERO */
   .hero {
-    position: relative;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative; height: 100vh; min-height: 600px;
+    display: flex; align-items: center;
     overflow: hidden;
+    background: #0a1628;
   }
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 50% 80%, rgba(11,61,145,0.25) 0%, transparent 60%),
-      linear-gradient(180deg, #0a0e1a 0%, #0d1829 40%, #1a2a4a 70%, #0d1829 100%);
+  .hero-bg-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+    z-index: 1;
   }
-
-  /* SVG mountain inside hero */
-  .hero-mountain {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    width: 100%;
-    height: 65%;
-  }
-
-  /* stars */
-  .stars {
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
-      radial-gradient(1px 1px at 25% 8%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 40% 20%, rgba(255,255,255,0.8) 0%, transparent 100%),
-      radial-gradient(1px 1px at 55% 5%, rgba(255,255,255,0.6) 0%, transparent 100%),
-      radial-gradient(1px 1px at 70% 18%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 85% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
-      radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
-      radial-gradient(1px 1px at 60% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 35% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 5% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 78% 38%, rgba(255,255,255,0.3) 0%, transparent 100%);
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    padding: 0 20px;
-  }
-  .hero-eyebrow {
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    color: #7a9cc7;
-    margin-bottom: 20px;
-    opacity: 0;
-    animation: fadeUp 1s 0.3s forwards;
-  }
+  .hero-svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .hero-content { position: relative; z-index: 2; padding: 0 60px; max-width: 680px; margin-top: 60px; }
   .hero-title {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(56px, 8vw, 110px);
-    font-weight: 400;
-    line-height: 1.0;
-    color: #e8e0d0;
-    margin-bottom: 10px;
-    opacity: 0;
-    animation: fadeUp 1s 0.5s forwards;
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 700; color: white; line-height: 1.1; margin-bottom: 16px;
   }
-  .hero-title em {
-    font-style: italic;
-    color: #7a9cc7;
-  }
-  .hero-subtitle {
-    font-size: 15px;
-    font-weight: 300;
-    letter-spacing: 1px;
-    color: #8a8278;
-    margin-bottom: 48px;
-    opacity: 0;
-    animation: fadeUp 1s 0.7s forwards;
-  }
-  .hero-ctas {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    opacity: 0;
-    animation: fadeUp 1s 0.9s forwards;
-  }
-  .btn-primary {
-    background: #0b3d91;
-    color: #e8e0d0;
-    border: none;
-    padding: 14px 40px;
-    font-family: 'Jost', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .btn-primary:hover { background: #0e50be; transform: translateY(-2px); }
-  .btn-outline {
-    background: transparent;
-    color: #e8e0d0;
-    border: 1px solid rgba(232,224,208,0.3);
-    padding: 14px 40px;
-    font-family: 'Jost', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .btn-outline:hover { border-color: rgba(232,224,208,0.8); transform: translateY(-2px); }
+  .hero-subtitle { font-size: 15px; color: rgba(255,255,255,0.82); line-height: 1.75; margin-bottom: 36px; max-width: 460px; font-weight: 400; }
 
-  /* SCROLL INDICATOR */
-  .scroll-indicator {
-    position: absolute;
-    bottom: 36px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    opacity: 0;
-    animation: fadeUp 1s 1.2s forwards;
+  .search-bar {
+    display: flex; align-items: center;
+    background: white; border-radius: 50px;
+    padding: 6px 6px 6px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    max-width: 560px;
   }
-  .scroll-line {
-    width: 1px;
-    height: 50px;
-    background: linear-gradient(to bottom, transparent, rgba(232,224,208,0.4));
-    animation: scrollPulse 2s infinite;
-  }
-  .scroll-text {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #5a5450;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-  }
+  .search-field { display: flex; flex-direction: column; flex: 1; padding: 4px 16px; border-right: 1px solid #e8e8e8; }
+  .search-field:last-of-type { border-right: none; }
+  .search-label { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .search-input { border: none; outline: none; font-size: 13px; color: #1a1a1a; background: transparent; font-family: 'Inter', sans-serif; }
+  .search-btn { background: #1a6bff; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .search-btn:hover { background: #0055ee; }
 
-  /* STATS STRIP */
-  .stats-strip {
-    background: #0d1829;
-    border-top: 1px solid rgba(122,156,199,0.15);
-    border-bottom: 1px solid rgba(122,156,199,0.15);
-    padding: 40px 60px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-  .stat-item {
-    text-align: center;
-    padding: 0 20px;
-    border-right: 1px solid rgba(122,156,199,0.1);
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-number {
-    font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    font-weight: 400;
-    color: #e8e0d0;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-  .stat-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #5a6880;
-  }
+  .section { padding: 80px 60px; max-width: 1200px; margin: 0 auto; }
+  .section-eyebrow { font-size: 12px; font-weight: 600; color: #1a6bff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-size: clamp(28px, 3vw, 40px); font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+  .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; }
+  .section-desc { font-size: 14px; color: #666; line-height: 1.7; max-width: 340px; text-align: right; }
 
-  /* SECTION SHARED */
-  .section {
-    padding: 120px 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .section-eyebrow {
-    font-size: 10px;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    color: #7a9cc7;
-    margin-bottom: 16px;
-  }
-  .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(36px, 4vw, 56px);
-    font-weight: 400;
-    color: #e8e0d0;
-    line-height: 1.2;
-    margin-bottom: 20px;
-  }
-  .section-body {
-    font-size: 15px;
-    font-weight: 300;
-    line-height: 1.9;
-    color: #7a7268;
-    max-width: 520px;
-  }
+  .dest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .dest-card { position: relative; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s; }
+  .dest-card:hover { transform: scale(1.02); }
+  .dest-card.large { height: 260px; }
+  .dest-card.small { height: 180px; }
+  .dest-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%); }
+  .dest-card-info { position: absolute; bottom: 16px; left: 16px; color: white; }
+  .dest-card-name { font-size: 18px; font-weight: 700; }
+  .dest-card-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .dest-card-tag { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); color: white; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* TREKS GRID */
-  .treks-section {
-    background: #080c18;
-    padding: 120px 60px;
-  }
-  .treks-header {
-    max-width: 1200px;
-    margin: 0 auto 64px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-  .treks-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-  .trek-card {
-    background: #0d1829;
-    border: 1px solid rgba(122,156,199,0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.4s;
-    position: relative;
-  }
-  .trek-card:hover {
-    border-color: rgba(122,156,199,0.35);
-    transform: translateY(-6px);
-  }
-  .trek-card-visual {
-    height: 200px;
-    position: relative;
-    overflow: hidden;
-  }
-  .trek-card-content {
-    padding: 24px;
-  }
-  .trek-tag {
-    display: inline-block;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #7a9cc7;
-    border: 1px solid rgba(122,156,199,0.3);
-    padding: 4px 10px;
-    border-radius: 2px;
-    margin-bottom: 12px;
-  }
-  .trek-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    color: #e8e0d0;
-    margin-bottom: 8px;
-    font-weight: 400;
-  }
-  .trek-desc {
-    font-size: 13px;
-    color: #5a6880;
-    line-height: 1.7;
-    margin-bottom: 20px;
-    font-weight: 300;
-  }
-  .trek-meta {
-    display: flex;
-    gap: 20px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(122,156,199,0.08);
-  }
-  .trek-meta-item {
-    font-size: 12px;
-    color: #4a5668;
-    letter-spacing: 0.5px;
-  }
-  .trek-meta-value {
-    display: block;
-    font-size: 14px;
-    color: #a0a898;
-    margin-top: 2px;
-    font-weight: 400;
-  }
+  .exp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .exp-card { border-radius: 16px; overflow: hidden; border: 1px solid #f0f0f0; transition: box-shadow 0.3s, transform 0.3s; cursor: pointer; background: white; }
+  .exp-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.1); transform: translateY(-4px); }
+  .exp-card-img { height: 200px; position: relative; overflow: hidden; }
+  .exp-card-tag { position: absolute; top: 12px; left: 12px; background: #1a6bff; color: white; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+  .exp-card-body { padding: 16px; }
+  .exp-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .exp-stars { color: #f5a623; font-size: 13px; }
+  .exp-rating-text { font-size: 12px; color: #888; }
+  .exp-name { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+  .exp-desc { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 14px; }
+  .exp-footer { display: flex; justify-content: space-between; align-items: center; }
+  .exp-price { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .exp-link { font-size: 13px; color: #1a6bff; font-weight: 600; text-decoration: none; }
 
-  /* FEATURES */
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-    background: rgba(122,156,199,0.08);
-    border: 1px solid rgba(122,156,199,0.08);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 80px;
-  }
-  .feature-item {
-    background: #080c18;
-    padding: 48px 40px;
-    transition: background 0.3s;
-  }
-  .feature-item:hover { background: #0d1829; }
-  .feature-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 20px;
-    color: #7a9cc7;
-  }
-  .feature-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: #e8e0d0;
-    margin-bottom: 10px;
-    font-weight: 400;
-  }
-  .feature-desc {
-    font-size: 14px;
-    color: #5a6880;
-    line-height: 1.8;
-    font-weight: 300;
-  }
-
-  /* CTA SECTION */
-  .cta-section {
-    background: linear-gradient(135deg, #0b3d91 0%, #051d4d 50%, #0a0e1a 100%);
-    padding: 120px 60px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 50%, rgba(122,156,199,0.1) 0%, transparent 70%);
-  }
+  .cta-banner { margin: 0 60px 80px; border-radius: 24px; overflow: hidden; position: relative; background: linear-gradient(135deg, #0a1628 0%, #1a3a6a 50%, #2d6a4f 100%); padding: 80px 60px; text-align: center; }
+  .cta-banner-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(26,107,255,0.12) 0%, transparent 70%); }
   .cta-content { position: relative; z-index: 1; }
-  .cta-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(40px, 5vw, 72px);
-    font-weight: 400;
-    color: #e8e0d0;
-    margin-bottom: 20px;
-    line-height: 1.1;
-  }
-  .cta-sub {
-    font-size: 15px;
-    color: #7a9cc7;
-    margin-bottom: 48px;
-    font-weight: 300;
-    letter-spacing: 0.5px;
-  }
+  .cta-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 50px); font-weight: 700; color: white; margin-bottom: 12px; }
+  .cta-sub { font-size: 15px; color: rgba(255,255,255,0.72); margin-bottom: 32px; }
+  .cta-btns { display: flex; gap: 16px; justify-content: center; }
+  .cta-btn-primary { background: white; color: #1a1a1a; border: none; padding: 13px 32px; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .cta-btn-primary:hover { background: #f0f0f0; }
+  .cta-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.45); padding: 13px 32px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .cta-btn-outline:hover { border-color: white; }
 
-  /* FOOTER */
-  footer {
-    background: #050810;
-    padding: 60px 60px 40px;
-    border-top: 1px solid rgba(122,156,199,0.08);
-  }
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .footer-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: #4a5668;
-  }
-  .footer-copy {
-    font-size: 12px;
-    color: #2a3040;
-    letter-spacing: 1px;
-  }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes scrollPulse {
-    0%, 100% { opacity: 0.3; }
-    50%       { opacity: 0.8; }
-  }
+  footer { background: #f8f8f8; border-top: 1px solid #eee; padding: 60px; }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 48px; }
+  .footer-logo { font-weight: 700; font-size: 18px; color: #1a1a1a; margin-bottom: 12px; }
+  .footer-tagline { font-size: 13px; color: #888; line-height: 1.7; max-width: 220px; }
+  .footer-col h4 { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 10px; }
+  .footer-col ul li a { font-size: 13px; color: #666; text-decoration: none; }
+  .footer-col ul li a:hover { color: #1a6bff; }
+  .newsletter-row { display: flex; gap: 8px; margin-top: 4px; }
+  .newsletter-input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; outline: none; font-family: 'Inter', sans-serif; }
+  .newsletter-btn { background: #1a6bff; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid #eee; display: flex; justify-content: space-between; font-size: 12px; color: #aaa; }
+  .footer-bottom a { color: #aaa; text-decoration: none; margin-left: 16px; }
 `;
 
-/* ---- SVG Mountain Scene ---- */
-function MountainScene() {
+function HeroScene() {
   return (
-    <svg
-      className="hero-mountain"
-      viewBox="0 0 1440 500"
-      preserveAspectRatio="xMidYMax meet"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Sky glow behind peaks */}
+    <svg className="hero-svg" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <radialGradient id="peakGlow" cx="50%" cy="30%" r="50%">
-          <stop offset="0%" stopColor="#1a3a6a" stopOpacity="0.6"/>
-          <stop offset="100%" stopColor="#0a0e1a" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#dce8f5"/>
-          <stop offset="100%" stopColor="#8aaacf"/>
+        <linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0a1628"/>
+          <stop offset="45%" stopColor="#1a3a6a"/>
+          <stop offset="100%" stopColor="#2d6a4f"/>
         </linearGradient>
-        <linearGradient id="midGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a2a4a"/>
-          <stop offset="100%" stopColor="#0d1829"/>
-        </linearGradient>
-        <linearGradient id="fgGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0f1e36"/>
-          <stop offset="100%" stopColor="#0a0e1a"/>
+        <linearGradient id="hsnow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff"/>
+          <stop offset="100%" stopColor="#b8d4f0"/>
         </linearGradient>
       </defs>
-
-      {/* Glow */}
-      <rect width="1440" height="500" fill="url(#peakGlow)"/>
-
-      {/* Far background mountains */}
-      <polygon points="200,400 380,160 560,400" fill="#0d1523" opacity="0.7"/>
-      <polygon points="340,400 550,110 760,400" fill="#0f1a2e" opacity="0.8"/>
-      <polygon points="700,400 880,140 1060,400" fill="#0d1523" opacity="0.7"/>
-      <polygon points="980,400 1150,180 1320,400" fill="#0f1a2e" opacity="0.6"/>
-
-      {/* Mid mountains */}
-      <polygon points="0,500 180,280 360,500" fill="url(#midGrad)"/>
-      <polygon points="160,500 420,200 680,500" fill="url(#midGrad)"/>
-      <polygon points="500,500 720,230 940,500" fill="#0e1b30"/>
-      <polygon points="760,500 1020,190 1280,500" fill="url(#midGrad)"/>
-      <polygon points="1100,500 1320,250 1540,500" fill="url(#midGrad)"/>
-
-      {/* Main Everest peak - center */}
-      <polygon points="520,500 720,60 920,500" fill="#112040"/>
-      {/* Snow cap */}
-      <polygon points="680,130 720,60 760,130 740,125 720,90 700,125" fill="url(#snowGrad)" opacity="0.9"/>
-
-      {/* Left major peak */}
-      <polygon points="100,500 310,120 520,500" fill="#0f1d35"/>
-      <polygon points="275,180 310,120 345,180 330,175 310,145 290,175" fill="url(#snowGrad)" opacity="0.7"/>
-
-      {/* Right major peak */}
-      <polygon points="920,500 1130,100 1340,500" fill="#0f1d35"/>
-      <polygon points="1095,165 1130,100 1165,165 1148,158 1130,128 1112,158" fill="url(#snowGrad)" opacity="0.7"/>
-
-      {/* Foreground ridge */}
-      <polygon points="-10,500 0,420 200,380 400,420 600,370 800,410 1000,365 1200,405 1440,380 1450,500" fill="url(#fgGrad)"/>
-
-      {/* Ground */}
-      <rect x="0" y="460" width="1440" height="40" fill="#0a0e1a"/>
+      <rect width="1440" height="800" fill="url(#hsky)"/>
+      {[[100,55],[260,30],[420,75],[600,20],[760,50],[920,35],[1080,65],[1250,28],[1400,45]].map(([x,y],i)=>(
+        <circle key={i} cx={x} cy={y} r={i%2===0?1.5:1} fill="white" opacity="0.45"/>
+      ))}
+      <polygon points="0,500 140,280 280,500" fill="#0b1c35" opacity="0.6"/>
+      <polygon points="180,500 360,230 540,500" fill="#0e2240" opacity="0.65"/>
+      <polygon points="480,500 660,260 840,500" fill="#0b1c35" opacity="0.6"/>
+      <polygon points="800,500 980,210 1160,500" fill="#0e2240" opacity="0.65"/>
+      <polygon points="1100,500 1280,250 1460,500" fill="#0b1c35" opacity="0.6"/>
+      <polygon points="440,800 720,100 1000,800" fill="#112040"/>
+      <polygon points="690,175 720,100 750,175 737,168 720,135 703,168" fill="url(#hsnow)" opacity="0.95"/>
+      <polygon points="60,800 280,190 500,800" fill="#0f1d38"/>
+      <polygon points="252,252 280,190 308,252 295,245 280,215 265,245" fill="url(#hsnow)" opacity="0.82"/>
+      <polygon points="940,800 1160,170 1380,800" fill="#0f1d38"/>
+      <polygon points="1132,235 1160,170 1188,235 1174,228 1160,198 1146,228" fill="url(#hsnow)" opacity="0.82"/>
+      <polygon points="-10,800 0,690 220,650 500,668 720,640 940,662 1200,652 1440,668 1450,800" fill="#1b4332"/>
+      <rect x="0" y="760" width="1440" height="40" fill="#122e22"/>
+      {[70,150,230,330,430,550,670,800,950,1080,1200,1330].map((x,i)=>(
+        <polygon key={i} points={`${x},675 ${x+10},648 ${x+20},675`} fill="#0d2318" opacity="0.8"/>
+      ))}
     </svg>
   );
 }
 
-/* ---- Trek Card SVG Illustrations ---- */
-function EverestIllustration() {
+function DestIllustration({ type }) {
+  const map = {
+    kathmandu: { bg: "#8B4513", mid: "#C4A35A", top: "#DEB887" },
+    pokhara: { bg: "#2d6a4f", mid: "#40916c", top: "#74c69d" },
+    everest: { bg: "#0a1628", mid: "#1a3a6a", top: "#4a7ab5" },
+    lumbini: { bg: "#7B5E3A", mid: "#C4A35A", top: "#DEB887" },
+    chitwan: { bg: "#1B4332", mid: "#40916c", top: "#74c69d" },
+    mustang: { bg: "#2C1810", mid: "#8B4513", top: "#A0522D" },
+  };
+  const c = map[type] || map.everest;
   return (
-    <svg viewBox="0 0 400 200" style={{width:'100%',height:'100%',display:'block'}} xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="ev1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0d2040"/>
-          <stop offset="100%" stopColor="#070e1c"/>
-        </linearGradient>
-      </defs>
-      <rect width="400" height="200" fill="url(#ev1)"/>
-      <polygon points="80,200 200,30 320,200" fill="#0f1d35"/>
-      <polygon points="150,200 200,60 250,200" fill="#162840"/>
-      <polygon points="185,80 200,30 215,80 208,76 200,50 192,76" fill="#c8dcf0" opacity="0.85"/>
-      <polygon points="0,200 80,120 160,200" fill="#0b1828"/>
-      <polygon points="240,200 320,130 400,200" fill="#0b1828"/>
-      <rect x="0" y="185" width="400" height="15" fill="#070e1c"/>
-      {/* stars */}
-      <circle cx="40" cy="25" r="1" fill="white" opacity="0.6"/>
-      <circle cx="120" cy="15" r="1.2" fill="white" opacity="0.5"/>
-      <circle cx="280" cy="20" r="1" fill="white" opacity="0.7"/>
-      <circle cx="360" cy="10" r="1.2" fill="white" opacity="0.4"/>
-      <circle cx="330" cy="50" r="0.8" fill="white" opacity="0.5"/>
+    <svg viewBox="0 0 400 260" style={{ width: "100%", height: "100%", display: "block" }} xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="260" fill={c.bg}/>
+      <polygon points="0,260 160,100 320,260" fill={c.mid} opacity="0.85"/>
+      <polygon points="160,260 280,130 400,260" fill={c.top} opacity="0.7"/>
+      <polygon points="200,260 280,160 360,260" fill={c.bg} opacity="0.5"/>
+      {type === "kathmandu" && <>
+        <rect x="150" y="110" width="100" height="100" fill={c.mid}/>
+        <polygon points="140,110 200,70 260,110" fill={c.top}/>
+        <rect x="178" y="140" width="18" height="60" fill="#8B6914"/>
+        <rect x="204" y="140" width="18" height="60" fill="#8B6914"/>
+      </>}
+      {type === "pokhara" && <>
+        <ellipse cx="200" cy="175" rx="220" ry="35" fill="#3a7bd5" opacity="0.4"/>
+        <polygon points="120,170 200,80 280,170" fill="white" opacity="0.85"/>
+        <polygon points="178,170 230,110 282,170" fill="white" opacity="0.65"/>
+      </>}
+      {type === "everest" && <>
+        <polygon points="160,260 240,80 320,260" fill={c.mid}/>
+        <polygon points="218,115 240,80 262,115 252,109 240,90 228,109" fill="white" opacity="0.9"/>
+      </>}
+      {type === "lumbini" && <>
+        <rect x="160" y="90" width="80" height="120" fill={c.mid}/>
+        <polygon points="150,90 200,55 250,90" fill={c.top}/>
+        <circle cx="200" cy="55" r="8" fill="#FFD700" opacity="0.8"/>
+      </>}
+      {type === "chitwan" && <>
+        <circle cx="100" cy="90" r="50" fill={c.mid}/>
+        <circle cx="220" cy="80" r="60" fill={c.top}/>
+        <circle cx="340" cy="95" r="45" fill={c.mid}/>
+      </>}
+      {type === "mustang" && <>
+        <rect x="150" y="100" width="100" height="120" fill={c.mid}/>
+        <polygon points="140,100 200,65 260,100" fill={c.top}/>
+        <circle cx="320" cy="50" r="22" fill="#FF8C00" opacity="0.45"/>
+      </>}
+      <rect x="0" y="230" width="400" height="30" fill="rgba(0,0,0,0.25)"/>
     </svg>
   );
 }
 
-function AnnapurnaIllustration() {
+function ExpIllustration({ type }) {
+  const scenes = {
+    basecamp: { bg: "#0a1628", mid: "#112040", peak: "#1a3a6a" },
+    annapurna: { bg: "#1a2a4a", mid: "#1f3560", peak: "#243870" },
+    heritage: { bg: "#7B4A1A", mid: "#C4935A", peak: "#DEB87A" },
+  };
+  const c = scenes[type] || scenes.basecamp;
   return (
-    <svg viewBox="0 0 400 200" style={{width:'100%',height:'100%',display:'block'}} xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="an1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a1030"/>
-          <stop offset="100%" stopColor="#070a18"/>
-        </linearGradient>
-      </defs>
-      <rect width="400" height="200" fill="url(#an1)"/>
-      <polygon points="0,200 140,80 280,200" fill="#150f28"/>
-      <polygon points="120,200 220,50 340,200" fill="#1c1235"/>
-      <polygon points="260,200 340,90 400,160 400,200" fill="#130e25"/>
-      <polygon points="190,90 220,50 250,90 238,85 220,65 202,85" fill="#dde8f8" opacity="0.8"/>
-      {/* Sunset tinge */}
-      <polygon points="90,130 140,80 190,130" fill="#3a1a30" opacity="0.5"/>
-      <rect x="0" y="185" width="400" height="15" fill="#070a18"/>
-      <circle cx="60" cy="30" r="1.2" fill="white" opacity="0.5"/>
-      <circle cx="310" cy="20" r="1" fill="white" opacity="0.6"/>
-      <circle cx="380" cy="40" r="0.8" fill="white" opacity="0.4"/>
+    <svg viewBox="0 0 400 200" style={{ width: "100%", height: "100%", display: "block" }} xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="200" fill={c.bg}/>
+      <polygon points="60,200 200,40 340,200" fill={c.mid}/>
+      <polygon points="172,100 200,40 228,100 216,94 200,65 184,94" fill="white" opacity="0.9"/>
+      <polygon points="0,200 80,120 160,200" fill={c.peak} opacity="0.8"/>
+      <polygon points="240,200 320,130 400,200" fill={c.peak} opacity="0.8"/>
+      {type === "basecamp" && <>
+        <polygon points="172,200 200,168 228,200" fill="#c0392b" opacity="0.85"/>
+        <rect x="197" y="168" width="4" height="18" fill="#999"/>
+      </>}
+      {type === "heritage" && <>
+        <rect x="160" y="100" width="80" height="80" fill={c.mid}/>
+        <polygon points="152,100 200,68 248,100" fill={c.peak}/>
+        <rect x="183" y="120" width="15" height="50" fill="#8B6914"/>
+        <rect x="202" y="120" width="15" height="50" fill="#8B6914"/>
+      </>}
+      <rect x="0" y="188" width="400" height="12" fill="rgba(0,0,0,0.3)"/>
     </svg>
   );
 }
 
-function LangtangIllustration() {
-  return (
-    <svg viewBox="0 0 400 200" style={{width:'100%',height:'100%',display:'block'}} xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="lt1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#081a20"/>
-          <stop offset="100%" stopColor="#050e12"/>
-        </linearGradient>
-      </defs>
-      <rect width="400" height="200" fill="url(#lt1)"/>
-      <polygon points="0,200 100,100 200,200" fill="#0a1e25"/>
-      <polygon points="100,200 240,70 380,200" fill="#0d2430"/>
-      <polygon points="300,200 380,110 440,200" fill="#0a1e25"/>
-      <polygon points="210,110 240,70 270,110 258,106 240,85 222,106" fill="#c0d8e8" opacity="0.8"/>
-      {/* Trees suggestion at base */}
-      <rect x="30" y="178" width="3" height="12" fill="#0d2c1a" opacity="0.7"/>
-      <rect x="55" y="176" width="3" height="14" fill="#0d2c1a" opacity="0.6"/>
-      <rect x="340" y="180" width="3" height="10" fill="#0d2c1a" opacity="0.7"/>
-      <rect x="365" y="177" width="3" height="13" fill="#0d2c1a" opacity="0.6"/>
-      <rect x="0" y="188" width="400" height="12" fill="#050e12"/>
-      <circle cx="30" cy="18" r="1.2" fill="white" opacity="0.6"/>
-      <circle cx="370" cy="25" r="1" fill="white" opacity="0.5"/>
-    </svg>
-  );
-}
-
-const treks = [
-  {
-    tag: "Classic",
-    name: "Everest Base Camp",
-    desc: "The world's most legendary trek. Journey through Sherpa villages to the foot of the highest mountain on Earth.",
-    duration: "14 Days",
-    altitude: "5,364 m",
-    difficulty: "Challenging",
-    Illustration: EverestIllustration,
-  },
-  {
-    tag: "Circuit",
-    name: "Annapurna Circuit",
-    desc: "A complete circumnavigation offering staggering biodiversity — subtropical valleys to arctic high passes.",
-    duration: "18 Days",
-    altitude: "5,416 m",
-    difficulty: "Moderate",
-    Illustration: AnnapurnaIllustration,
-  },
-  {
-    tag: "Hidden Gem",
-    name: "Langtang Valley",
-    desc: "Nepal's closest Himalayan trail to Kathmandu. Glaciers, yak pastures, and remote Tamang culture.",
-    duration: "10 Days",
-    altitude: "4,984 m",
-    difficulty: "Moderate",
-    Illustration: LangtangIllustration,
-  },
+const destinations = [
+  { id: "kathmandu", name: "Kathmandu", sub: "The City of Temples", tag: "Cultural", size: "large" },
+  { id: "pokhara", name: "Pokhara", sub: "Tranquility by the Lake", tag: "Nature", size: "large" },
+  { id: "everest", name: "Everest", sub: "Safe & Work", tag: "Adventure", size: "small" },
+  { id: "lumbini", name: "Lumbini", sub: "Birthplace of Buddha", tag: "Heritage", size: "small" },
+  { id: "chitwan", name: "Chitwan", sub: "Safe & Work", tag: "Wildlife", size: "small" },
+  { id: "mustang", name: "Mustang", sub: "The Forbidden Kingdom", tag: "Remote", size: "small" },
 ];
 
-const features = [
-  {
-    title: "Expert Sherpa Guides",
-    desc: "Every trek is led by certified high-altitude guides with decades of mountain knowledge passed through generations.",
-    icon: (
-      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <circle cx="20" cy="12" r="6"/>
-        <path d="M8 36c0-6.627 5.373-12 12-12s12 5.373 12 12"/>
-        <path d="M30 8l4 4-4 4"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Acclimatisation Planning",
-    desc: "Scientifically designed itineraries with rest days built in to ensure your body adapts safely to altitude.",
-    icon: (
-      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <path d="M20 4v10M20 26v10M4 20h10M26 20h10"/>
-        <circle cx="20" cy="20" r="8"/>
-        <circle cx="20" cy="20" r="3"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Small Group Expeditions",
-    desc: "Maximum 8 trekkers per group. More personal, less impact, and a deeper connection to the landscapes you cross.",
-    icon: (
-      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <circle cx="14" cy="12" r="5"/>
-        <circle cx="26" cy="12" r="5"/>
-        <path d="M4 34c0-5.523 4.477-10 10-10"/>
-        <path d="M26 24c5.523 0 10 4.477 10 10"/>
-        <path d="M17 34c0-1.657 1.343-3 3-3s3 1.343 3 3"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Teahouse & Camping",
-    desc: "Choose your style — cosy teahouse culture with local hosts, or wilderness camping beneath a sky full of stars.",
-    icon: (
-      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2">
-        <path d="M4 34L20 8l16 26H4z"/>
-        <path d="M15 34v-8h10v8"/>
-        <path d="M12 20h16"/>
-      </svg>
-    ),
-  },
+const experiences = [
+  { type: "basecamp", tag: "Trek", name: "Everest Base Camp Trek", desc: "The ultimate trekking journey through Sherpa villages to the foot of the world.", rating: "4.9", reviews: "712", price: "$1,299" },
+  { type: "annapurna", tag: "Circuit", name: "Annapurna Sanctuary", desc: "Experience the natural amphitheater of towering Himalayan peaks and local hospitality.", rating: "4.8", reviews: "534", price: "$950" },
+  { type: "heritage", tag: "Cultural", name: "Cultural Heritage Tour", desc: "Explore the UNESCO World Heritage sites of the Kathmandu Valley and spiritual Lumbini.", rating: "4.9", reviews: "6", price: "$780" },
 ];
 
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [email, setEmail] = useState("");
 
   return (
     <>
       <style>{styles}</style>
 
-      {/* NAV */}
-      <nav className="nav" style={scrolled ? { background: "rgba(10,14,26,0.97)" } : {}}>
+      <nav className="nav">
         <a href="/" className="nav-logo">Nepal Sanctuary</a>
         <ul className="nav-links">
-          <li><a href="#treks">Treks</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#guides">Guides</a></li>
+          <li><a href="#destinations">Destinations</a></li>
+          <li><a href="#experiences">Tours</a></li>
+          <li><a href="#experiences">Packages</a></li>
+          <li><a href="#cta">Contact</a></li>
         </ul>
-        <button className="nav-btn" onClick={() => window.location.href = "/signup"}>
-          Begin Journey
-        </button>
+        <div className="nav-actions">
+          <button className="btn-login" onClick={() => window.location.href = "/signin"}>Login</button>
+          <button className="btn-signup" onClick={() => window.location.href = "/signup"}>Sign Up</button>
+        </div>
       </nav>
 
-      {/* HERO */}
       <section className="hero">
-        <div className="hero-bg"/>
-        <div className="stars"/>
-        <MountainScene />
+        <HeroScene />
+        <div className="hero-bg-overlay"/>
         <div className="hero-content">
-          <p className="hero-eyebrow">Est. Kathmandu, Nepal</p>
-          <h1 className="hero-title">
-            Roof of<br/><em>the World</em>
-          </h1>
-          <p className="hero-subtitle">Guided Himalayan Treks · Curated Expeditions · Authentic Culture</p>
-          <div className="hero-ctas">
-            <a href="#treks" className="btn-primary">Explore Treks</a>
-            <a href="/signup" className="btn-outline">Create Account</a>
+          <h1 className="hero-title">Explore the Beauty of Nepal</h1>
+          <p className="hero-subtitle">Experience breathtaking trekking, ancient culture, and unforgettable landscapes — from the peaks of Everest to the jungles of Chitwan.</p>
+          <div className="search-bar">
+            <div className="search-field">
+              <span className="search-label">Destination</span>
+              <input className="search-input" placeholder="Where to go?"/>
+            </div>
+            <div className="search-field">
+              <span className="search-label">Date</span>
+              <input className="search-input" placeholder="When?"/>
+            </div>
+            <div className="search-field">
+              <span className="search-label">Budget</span>
+              <input className="search-input" placeholder="Max budget"/>
+            </div>
+            <button className="search-btn">
+              <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </button>
           </div>
-        </div>
-        <div className="scroll-indicator">
-          <span className="scroll-text">Scroll</span>
-          <div className="scroll-line"/>
         </div>
       </section>
 
-      {/* STATS */}
-      <div className="stats-strip">
-        {[
-          { number: "8,849", label: "Metres — Everest summit" },
-          { number: "2,400+", label: "Expeditions completed" },
-          { number: "94 %", label: "Summit success rate" },
-          { number: "18", label: "Curated trek routes" },
-        ].map((s) => (
-          <div className="stat-item" key={s.label}>
-            <div className="stat-number">{s.number}</div>
-            <div className="stat-label">{s.label}</div>
+      <div style={{ background: "#fff" }} id="destinations">
+        <div className="section">
+          <div className="section-header">
+            <div>
+              <p className="section-eyebrow">Curated Journeys</p>
+              <h2 className="section-title">Featured Destinations</h2>
+            </div>
+            <p className="section-desc">Hand-picked spiritual and natural wonders curated by local experts for an authentic Nepalese encounter.</p>
           </div>
-        ))}
+          <div className="dest-grid">
+            {destinations.slice(0, 2).map((d) => (
+              <div key={d.id} className="dest-card large">
+                <div style={{ width: "100%", height: "100%" }}><DestIllustration type={d.id}/></div>
+                <div className="dest-card-overlay"/>
+                <span className="dest-card-tag">{d.tag}</span>
+                <div className="dest-card-info">
+                  <div className="dest-card-name">{d.name}</div>
+                  <div className="dest-card-sub">{d.sub}</div>
+                </div>
+              </div>
+            ))}
+            {destinations.slice(2).map((d) => (
+              <div key={d.id} className="dest-card small">
+                <div style={{ width: "100%", height: "100%" }}><DestIllustration type={d.id}/></div>
+                <div className="dest-card-overlay"/>
+                <span className="dest-card-tag" style={{ fontSize: "9px" }}>{d.tag}</span>
+                <div className="dest-card-info">
+                  <div className="dest-card-name" style={{ fontSize: "15px" }}>{d.name}</div>
+                  <div className="dest-card-sub">{d.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* TREKS */}
-      <section className="treks-section" id="treks">
-        <div className="treks-header">
-          <div>
-            <p className="section-eyebrow">Our Routes</p>
-            <h2 className="section-title">Choose<br/>Your Summit</h2>
+      <div style={{ background: "#fafafa" }} id="experiences">
+        <div className="section">
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 className="section-title">Unforgettable Experiences</h2>
+            <div style={{ width: 48, height: 3, background: "#1a6bff", margin: "12px auto 0", borderRadius: 2 }}/>
           </div>
-          <p className="section-body" style={{ margin: 0 }}>
-            Each trek is a world unto itself — different terrain, culture, and challenge.
-            All share the same sky, the same silence, the same reward.
-          </p>
-        </div>
-
-        <div className="treks-grid">
-          {treks.map((trek) => (
-            <div className="trek-card" key={trek.name}>
-              <div className="trek-card-visual">
-                <trek.Illustration />
-              </div>
-              <div className="trek-card-content">
-                <span className="trek-tag">{trek.tag}</span>
-                <h3 className="trek-name">{trek.name}</h3>
-                <p className="trek-desc">{trek.desc}</p>
-                <div className="trek-meta">
-                  <div className="trek-meta-item">
-                    Duration
-                    <span className="trek-meta-value">{trek.duration}</span>
+          <div className="exp-grid">
+            {experiences.map((e) => (
+              <div key={e.name} className="exp-card">
+                <div className="exp-card-img">
+                  <ExpIllustration type={e.type}/>
+                  <span className="exp-card-tag">{e.tag}</span>
+                </div>
+                <div className="exp-card-body">
+                  <div className="exp-rating">
+                    <span className="exp-stars">★★★★★</span>
+                    <span className="exp-rating-text">{e.rating} ({e.reviews} reviews)</span>
                   </div>
-                  <div className="trek-meta-item">
-                    Max Altitude
-                    <span className="trek-meta-value">{trek.altitude}</span>
-                  </div>
-                  <div className="trek-meta-item">
-                    Difficulty
-                    <span className="trek-meta-value">{trek.difficulty}</span>
+                  <div className="exp-name">{e.name}</div>
+                  <div className="exp-desc">{e.desc}</div>
+                  <div className="exp-footer">
+                    <span className="exp-price">{e.price}</span>
+                    <a href="#" className="exp-link">View Details →</a>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ABOUT */}
-      <section className="section" id="about" style={{ background: "#0a0e1a" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center", maxWidth: 1200, margin: "0 auto" }}>
-          <div>
-            <p className="section-eyebrow">Our Philosophy</p>
-            <h2 className="section-title">The Mountain<br/>Demands Respect</h2>
-            <p className="section-body">
-              Nepal Sanctuary was born from a belief that the Himalayas should be experienced
-              slowly, responsibly, and deeply. We are not a tour operator — we are mountain
-              companions who believe the journey is as sacred as the summit.
-            </p>
-            <p className="section-body" style={{ marginTop: 20 }}>
-              Every itinerary we craft honours the land, the communities who call it home,
-              and the trekkers who trust us with some of the most meaningful days of their lives.
-            </p>
-          </div>
-          {/* Decorative element */}
-          <div style={{ position: "relative" }}>
-            <div style={{
-              width: "100%",
-              aspectRatio: "4/3",
-              background: "linear-gradient(135deg, #0d1829 0%, #112040 100%)",
-              border: "1px solid rgba(122,156,199,0.1)",
-              borderRadius: 4,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: 8,
-            }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 72, color: "#0b3d91", opacity: 0.4, lineHeight: 1 }}>
-                &#9651;
-              </div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, letterSpacing: 6, color: "#2a3a5a", textTransform: "uppercase" }}>
-                Since 2018
-              </div>
-            </div>
-            <div style={{
-              position: "absolute",
-              top: -16, right: -16,
-              width: 120, height: 120,
-              border: "1px solid rgba(122,156,199,0.08)",
-              borderRadius: 4,
-              zIndex: -1,
-            }}/>
+            ))}
           </div>
         </div>
+      </div>
 
-        <div className="features-grid" id="guides">
-          {features.map((f) => (
-            <div className="feature-item" key={f.title}>
-              <div className="feature-icon">{f.icon}</div>
-              <h3 className="feature-title">{f.title}</h3>
-              <p className="feature-desc">{f.desc}</p>
+      <div id="cta">
+        <div className="cta-banner">
+          <div className="cta-banner-overlay"/>
+          <div className="cta-content">
+            <h2 className="cta-title">Book Your Adventure Now</h2>
+            <p className="cta-sub">Connect with our local travel experts and design your perfect Nepalese getaway.</p>
+            <div className="cta-btns">
+              <button className="cta-btn-primary" onClick={() => window.location.href = "/signup"}>Start Planning</button>
+              <button className="cta-btn-outline">Talk to Expert</button>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <p className="section-eyebrow" style={{ marginBottom: 20 }}>Ready to Begin?</p>
-          <h2 className="cta-title">Your Himalayan<br/><em style={{ fontFamily: "'Playfair Display', serif" }}>Story Starts Here</em></h2>
-          <p className="cta-sub">Create your account and start planning your expedition today.</p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-            <a href="/signup" className="btn-primary" style={{ background: "#e8e0d0", color: "#0a0e1a" }}>
-              Create Account
-            </a>
-            <a href="/signin" className="btn-outline">Sign In</a>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* FOOTER */}
       <footer>
         <div className="footer-inner">
-          <div className="footer-logo">Nepal Sanctuary</div>
-          <div className="footer-copy">© 2026 Nepal Sanctuary. All rights reserved.</div>
+          <div>
+            <div className="footer-logo">Nepal Sanctuary</div>
+            <p className="footer-tagline">Crafting authentic Nepalese experiences since 2018. We are your travel companions in the Himalayas.</p>
+          </div>
+          <div className="footer-col">
+            <h4>Destinations</h4>
+            <ul>
+              <li><a href="#">Kathmandu Valley</a></li>
+              <li><a href="#">Everest Region</a></li>
+              <li><a href="#">Annapurna Circuit</a></li>
+              <li><a href="#">Chitwan Safari</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms & Conditions</a></li>
+              <li><a href="#">Contact Us</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Newsletter</h4>
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 12, lineHeight: 1.6 }}>Stay updated with our latest offers and trekking tips.</p>
+            <div className="newsletter-row">
+              <input className="newsletter-input" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)}/>
+              <button className="newsletter-btn">Join</button>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2026 Nepal Sanctuary. All rights reserved.</span>
+          <div><a href="#">Privacy</a><a href="#">Terms</a></div>
         </div>
       </footer>
     </>
