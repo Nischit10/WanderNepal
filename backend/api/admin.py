@@ -1,7 +1,13 @@
 from django.contrib import admin
-from .models import User
+from .models import User, Destination
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('email', 'full_name', 'is_staff', 'is_superuser')
     search_fields = ('email', 'full_name')
+
+@admin.register(Destination)
+class DestinationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'city', 'country', 'category', 'rating', 'price_per_night')
+    list_filter = ('category', 'country')
+    search_fields = ('name', 'city', 'description')
