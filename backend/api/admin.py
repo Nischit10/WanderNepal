@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Destination
+from .models import User, Destination, Booking
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -11,3 +11,9 @@ class DestinationAdmin(admin.ModelAdmin):
     list_display = ('name', 'city', 'country', 'category', 'rating', 'price_per_night')
     list_filter = ('category', 'country')
     search_fields = ('name', 'city', 'description')
+
+@admin.register(Booking)
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'destination', 'start_date', 'end_date', 'total_price', 'created_at')
+    list_filter = ('start_date', 'end_date', 'destination')
+    search_fields = ('user__email', 'destination__name')
