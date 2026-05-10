@@ -16,9 +16,11 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    destinationName = serializers.CharField(source='destination.name', read_only=True)
+
     class Meta:
         model = Booking
-        fields = ['id', 'destinationId', 'startDate', 'endDate', 'totalPrice', 'created_at']
+        fields = ['id', 'destinationId', 'destinationName', 'startDate', 'endDate', 'totalPrice', 'created_at']
         read_only_fields = ['id', 'totalPrice', 'created_at']
 
     def validate(self, data):

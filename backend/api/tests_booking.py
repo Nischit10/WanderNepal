@@ -66,3 +66,50 @@ class BookingTests(TestCase):
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_my_bookings(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        
+        # Create two bookings
+        Booking.objects.create(
+            user=self.user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        
+        another_destination = Destination.objects.create(
+            name='Kathmandu',
+            city='Kathmandu',
+            country='Nepal',
+            description='Capital city',
+            image_url='http://example.com/kathmandu.jpg',
+            price_per_night=40.00,
+            category='Culture',
+            rating=4.8
+        )
+        
+        Booking.objects.create(
+            user=self.user,
+            destination=another_destination,
+            start_date=date.today() + timedelta(days=5),
+            end_date=date.today() + timedelta(days=7),
+            total_price=80.00
+        )
+        
+        url = reverse('my-bookings')
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        # Check if destinationName is present
+        self.assertTrue('destinationName' in response.data[0])
+        # The latest booking (created_at descending) should be first
+        self.assertEqual(response.data[0]['destinationName'], 'Kathmandu')
+        self.assertEqual(response.data[1]['destinationName'], 'Pokhara')
+
+    def test_get_my_bookings_unauthorized(self):
+        url = reverse('my-bookings')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
