@@ -113,3 +113,74 @@ class BookingTests(TestCase):
         url = reverse('my-bookings')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_booking_detail_success(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        booking = Booking.objects.create(
+            user=self.user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        url = reverse('booking-detail', kwargs={'pk': booking.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], booking.id)
+        self.assertEqual(response.data['status'], 'CONFIRMED')
+
+    def test_get_booking_detail_forbidden(self):
+        other_user = User.objects.create_user(
+            email='other@example.com',
+            password='password123',
+            full_name='Other User',
+            username='otheruser'
+        )
+        booking = Booking.objects.create(
+            user=other_user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        url = reverse('booking-detail', kwargs={'pk': booking.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cancel_booking_success(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        booking = Booking.objects.create(
+            user=self.user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        url = reverse('booking-cancel', kwargs={'pk': booking.id})
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'CANCELLED')
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'CANCELLED')
+
+    def test_cancel_booking_forbidden(self):
+        other_user = User.objects.create_user(
+            email='other2@example.com',
+            password='password123',
+            full_name='Other User 2',
+            username='otheruser2'
+        )
+        booking = Booking.objects.create(
+            user=other_user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        url = reverse('booking-cancel', kwargs={'pk': booking.id})
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, 'CONFIRMED')
