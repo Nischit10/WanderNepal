@@ -33,3 +33,27 @@ class DestinationTests(APITestCase):
         url = reverse('destination-detail', kwargs={'pk': 999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_destination_rating_validation_low(self):
+        """Test that a rating below 0 is invalid in the serializer."""
+        data = {
+            "name": "Invalid", "city": "Test", "country": "Test", "description": "Test",
+            "image_url": "http://test.com", "price_per_night": 10, "category": "Test",
+            "rating": -1.0
+        }
+        from api.serializers.destination import DestinationSerializer
+        serializer = DestinationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('rating', serializer.errors)
+
+    def test_destination_rating_validation_high(self):
+        """Test that a rating above 5 is invalid in the serializer."""
+        data = {
+            "name": "Invalid", "city": "Test", "country": "Test", "description": "Test",
+            "image_url": "http://test.com", "price_per_night": 10, "category": "Test",
+            "rating": 6.0
+        }
+        from api.serializers.destination import DestinationSerializer
+        serializer = DestinationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('rating', serializer.errors)
