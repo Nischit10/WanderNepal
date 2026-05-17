@@ -1,0 +1,141 @@
+/* ===== Navbar ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.wn-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 65px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  font-family: 'Inter', sans-serif;
+  transition: box-shadow 0.2s;
+}
+
+.wn-nav.scrolled {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+.wn-nav-logo {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1a1a1a;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: -0.3px;
+}
+
+.wn-nav-links {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wn-nav-links li a,
+.wn-nav-links li button {
+  display: inline-block;
+  padding: 6px 14px;
+  color: #444;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+
+.wn-nav-links li a:hover,
+.wn-nav-links li button:hover {
+  color: #1a6bff;
+  background: rgba(26, 107, 255, 0.06);
+}
+
+.wn-nav-links li a.active {
+  color: #1a6bff;
+  font-weight: 600;
+}
+
+.wn-nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.wn-btn-ghost {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+
+.wn-btn-ghost:hover {
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.wn-btn-primary {
+  background: #1a6bff;
+  color: white;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  font-family: 'Inter', sans-serif;
+}
+
+.wn-btn-primary:hover {
+  background: #0055ee;
+  transform: translateY(-1px);
+}
+
+.wn-btn-logout {
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  color: #e53e3e;
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+
+.wn-btn-logout:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+}
+
+@media (max-width: 768px) {
+  .wn-nav {
+    padding: 0 20px;
+  }
+  .wn-nav-links {
+    gap: 2px;
+  }
+  .wn-nav-links li a,
+  .wn-nav-links li button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
