@@ -21,7 +21,31 @@ class DestinationTests(APITestCase):
         url = reverse('destinations')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        # With pagination, response.data is a dict with 'count', 'next', 'previous', 'results'
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertIn('count', response.data)
+        self.assertIn('next', response.data)
+        self.assertIn('previous', response.data)
+
+    def test_search_destination(self):
+        url = reverse('destinations') + '?search=Pokhara'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], "Pokhara")
+
+    def test_filter_destination_category(self):
+        url = reverse('destinations') + '?category=Nature'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['category'], "Nature")
+
+    def test_filter_destination_category_no_match(self):
+        url = reverse('destinations') + '?category=Beach'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_get_destination_detail_valid(self):
         url = reverse('destination-detail', kwargs={'pk': self.destination.pk})
