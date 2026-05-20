@@ -57,6 +57,9 @@ class DestinationTests(APITestCase):
         url = reverse('destination-detail', kwargs={'pk': 999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['success'], False)
+        self.assertEqual(response.data['error'], "NOT_FOUND")
+        self.assertIn('message', response.data)
 
     def test_destination_rating_validation_low(self):
         """Test that a rating below 0 is invalid in the serializer."""
