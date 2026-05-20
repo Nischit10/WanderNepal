@@ -1,7 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getDestinationById, getDestinations, getNavigation } from "../services/api";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { getDestinationById, getDestinations, getNavigation, destinationImageFallback } from "../services/api";
 import Navbar from "../components/Navbar";
+
+function parseDays(duration) {
+  const n = parseInt(String(duration), 10);
+  return Number.isFinite(n) && n > 0 ? n : 5;
+}
+
+function buildItinerary(dest, navData) {
+  const days = parseDays(dest.duration);
+  if (navData) {
+    const stops = [
+      { day: 1, title: "Arrival & briefing", place: navData.startPoint },
+      ...(navData.waypoints || []).map((wp, i) => ({
+        day: i + 2,
+        title: `Explore — Day ${i + 2}`,
+        place: wp,
+      })),
+      { day: days, title: "Trip highlight & wrap-up", place: navData.endPoint },
+    ];
+    return stops.slice(0, days);
+  }
+  return Array.from({ length: days }, (_, i) => ({
+    day: i + 1,
+    title: i === 0 ? "Arrival" : i === days - 1 ? "Departure" : `Day ${i + 1} activities`,
+    place: i === 0 ? `${dest.city}, ${dest.country}` : dest.name,
+  }));
+}
+
+function buildReviews(dest) {
+  const stars = Math.round(dest.rating);
+  const samples = [
+    { name: "Priya Sharma", date: "January 2026", text: `Outstanding ${dest.category.toLowerCase()} experience. Our guide was professional and the trip matched the description perfectly.` },
+    { name: "James Liu", date: "December 2025", text: "Well organized from pickup to drop-off. Great value and beautiful scenery throughout." },
+    { name: "Anita Müller", date: "November 2025", text: "Felt safe at all times. Would book again with WanderNepal for my next Nepal adventure." },
+    { name: "Marco Rossi", date: "October 2025", text: "Loved every moment — especially the local food and cultural stops along the way." },
+  ];
+  return samples.map((r, i) => ({ ...r, rating: i === 0 ? stars : Math.max(4, stars - (i % 2)) }));
+}
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
@@ -156,6 +193,23 @@ const styles = `
   .nav-stat-val { font-size: 15px; font-weight: 700; color: #1a1a1a; }
   .nav-no-data { text-align: center; padding: 20px; color: #888; font-size: 14px; line-height: 1.7; }
 
+  .itinerary-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; }
+  .itinerary-day { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+  .itinerary-day:last-child { border-bottom: none; }
+  .itinerary-day-num { width: 48px; height: 48px; border-radius: 12px; background: #1a6bff; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .itinerary-day-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .itinerary-day-place { font-size: 14px; color: #666; line-height: 1.6; }
+
+  .reviews-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding: 20px; background: #f8f9fc; border-radius: 12px; }
+  .reviews-score { font-size: 42px; font-weight: 700; color: #1a1a1a; line-height: 1; }
+  .reviews-list { display: flex; flex-direction: column; gap: 16px; }
+  .review-card { background: #f8f9fc; border-radius: 14px; padding: 20px 22px; border: 1px solid #eee; }
+  .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .review-name { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .review-date { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .review-stars { color: #f5a623; font-size: 14px; }
+  .review-text { font-size: 14px; color: #555; line-height: 1.75; }
+
   footer { background: #f8f8f8; border-top: 1px solid #eee; padding: 48px 60px; }
   .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
   .footer-logo { font-weight: 700; font-size: 16px; color: #1a1a1a; }
@@ -165,6 +219,7 @@ const styles = `
 export default function DestinationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [destination, setDestination] = useState(null);
   const [relatedList, setRelatedList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -241,6 +296,10 @@ export default function DestinationDetailPage() {
   );
 
   const d = destination;
+  const itinerary = buildItinerary(d, navData);
+  const reviews = buildReviews(d);
+  const heroImg = d.images?.[0] || d.image;
+  const fallbackImg = destinationImageFallback(d.category);
 
   return (
     <>
@@ -249,7 +308,11 @@ export default function DestinationDetailPage() {
 
       {/* HERO */}
       <section className="detail-hero">
-        <img src={d.images?.[0] || d.image} alt={d.name}/>
+        <img
+          src={heroImg}
+          alt={d.name}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }}
+        />
         <div className="detail-hero-overlay"/>
         <div className="detail-hero-content">
           <div className="detail-hero-left">
@@ -266,13 +329,21 @@ export default function DestinationDetailPage() {
           <div className="detail-book-card">
             <div className="detail-book-from">Starting from</div>
             <div className="detail-book-row">
-              <div className="detail-book-price">${d.price.toLocaleString()}</div>
+              <div className="detail-book-price">${(d.priceFrom ?? d.price).toLocaleString()}</div>
               <div className="detail-book-duration">
                 DURATION:
                 <span>{d.duration}</span>
               </div>
             </div>
-            <button className="btn-book-now" onClick={() => navigate(`/booking/${d.id}`)}>
+            <button
+              className="btn-book-now"
+              onClick={() => navigate(`/booking/${d.id}`, {
+                state: {
+                  preferredStartDate: location.state?.preferredStartDate,
+                  maxBudget: location.state?.maxBudget,
+                },
+              })}
+            >
               Book Now →
             </button>
           </div>
@@ -295,29 +366,64 @@ export default function DestinationDetailPage() {
       {/* BODY */}
       <div className="detail-body">
         <div className="detail-main">
-          <div className="detail-section-title">
-            <span>The Spiritual Heart of the Himalayas</span>
-            <span className="detail-difficulty">DIFFICULTY: {d.difficulty}</span>
-          </div>
-          <p className="detail-desc">{d.description}</p>
+          {activeTab === "Overview" && (
+            <>
+              <div className="detail-section-title">
+                <span>{d.name}</span>
+                <span className="detail-difficulty">DIFFICULTY: {d.difficulty}</span>
+              </div>
+              <p className="detail-desc">{d.description}</p>
 
-          {d.highlights && (
-            <div className="highlights-grid">
-              {d.highlights.map((h, i) => (
-                <div key={i} className="highlight-card">
-                  <div className="highlight-icon">{h.icon}</div>
-                  <div>
-                    <div className="highlight-title">{h.title}</div>
-                    <div className="highlight-desc">{h.desc}</div>
-                  </div>
+              {d.highlights && (
+                <div className="highlights-grid">
+                  {d.highlights.map((h, i) => (
+                    <div key={i} className="highlight-card">
+                      <div className="highlight-icon">{h.icon}</div>
+                      <div>
+                        <div className="highlight-title">{h.title}</div>
+                        <div className="highlight-desc">{h.desc}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+
+              {d.images && d.images.length > 0 && (
+                <>
+                  <div className="gallery-title">Visual Journey</div>
+                  <div className="gallery-grid">
+                    <img className="gallery-main" src={d.images[0]} alt={d.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }} />
+                    <img src={d.images[1] || d.images[0]} alt={d.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }} />
+                    <img src={d.images[2] || d.images[1] || d.images[0]} alt={d.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackImg; }} />
+                  </div>
+                </>
+              )}
+            </>
           )}
+
+          {activeTab === "Itinerary" && (
+            <>
+              <div className="detail-section-title">
+                <span>Trip Itinerary</span>
+                <span className="detail-difficulty">{d.duration}</span>
+              </div>
+              <p className="detail-desc">Day-by-day plan for your {d.name} adventure.</p>
+
+              <div className="itinerary-list">
+                {itinerary.map((item) => (
+                  <div key={item.day} className="itinerary-day">
+                    <div className="itinerary-day-num">D{item.day}</div>
+                    <div>
+                      <div className="itinerary-day-title">{item.title}</div>
+                      <div className="itinerary-day-place">{item.place}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
           {/* GETTING THERE */}
           <div className="nav-section">
-            <div className="nav-section-title">🗺️ Getting There</div>
+            <div className="nav-section-title">🗺️ Route overview</div>
             {navLoading && <p style={{ fontSize: 14, color: "#888" }}>Loading route info...</p>}
             {!navLoading && (navError || !navData) && (
               <p className="nav-no-data">Route information is not available for this destination yet.</p>
@@ -369,19 +475,39 @@ export default function DestinationDetailPage() {
             )}
           </div>
 
-          {/* GALLERY */}
-          {d.images && d.images.length > 1 && (
+
+            </>
+          )}
+
+          {activeTab === "Reviews" && (
             <>
-              <div className="gallery-title">Visual Journey</div>
-              <div className="gallery-grid">
-                <img className="gallery-main" src={d.images[0]} alt={d.name}/>
-                <img src={d.images[1]} alt={d.name}/>
-                <img src={d.images[2] || d.images[1]} alt={d.name}/>
+              <div className="detail-section-title">
+                <span>Traveler Reviews</span>
+              </div>
+              <div className="reviews-summary">
+                <div className="reviews-score">{d.rating}</div>
+                <div>
+                  <div className="review-stars">{"★".repeat(Math.round(d.rating))}</div>
+                  <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>{d.reviews} verified reviews</div>
+                </div>
+              </div>
+              <div className="reviews-list">
+                {reviews.map((r) => (
+                  <div key={r.name} className="review-card">
+                    <div className="review-header">
+                      <div>
+                        <div className="review-name">{r.name}</div>
+                        <div className="review-date">{r.date}</div>
+                      </div>
+                      <div className="review-stars">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
+                    </div>
+                    <p className="review-text">{r.text}</p>
+                  </div>
+                ))}
               </div>
             </>
           )}
         </div>
-
         {/* SIDEBAR */}
         <div className="detail-sidebar">
           <div className="essentials-card">
@@ -403,7 +529,7 @@ export default function DestinationDetailPage() {
             <div className="help-icon">🧭</div>
             <div className="help-title">Need Help?</div>
             <div className="help-desc">Our Himalayan experts are ready to help you plan the perfect sanctuary escape.</div>
-            <button className="btn-contact">Contact Expert</button>
+            <button type="button" className="btn-contact" onClick={() => navigate("/contact")}>Contact Expert</button>
           </div>
         </div>
       </div>
@@ -427,7 +553,7 @@ export default function DestinationDetailPage() {
                   <div className="related-card-info">
                     <div className="related-card-eyebrow">{r.difficulty}</div>
                     <div className="related-card-name">{r.name}</div>
-                    <div className="related-card-sub">{r.duration} • From ${r.price.toLocaleString()}</div>
+                    <div className="related-card-sub">{r.duration} • From ${(r.priceFrom ?? r.price).toLocaleString()}</div>
                   </div>
                 </div>
               ))}

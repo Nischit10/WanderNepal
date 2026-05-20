@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getDestinations } from "../services/api";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { getDestinations, destinationImageFallback } from "../services/api";
+import { filterDestinations, readSearchFromParams } from "../utils/destinationSearch";
 import Navbar from "../components/Navbar";
 
 const styles = `
@@ -112,6 +113,20 @@ const styles = `
   .retry-btn { margin-top: 8px; background: #1a6bff; color: white; border: none; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
   .retry-btn:hover { background: #0055ee; }
 
+  .search-results-bar {
+    max-width: 1200px; margin: 0 auto 24px; padding: 16px 20px;
+    background: #eef4ff; border: 1px solid #c8dcff; border-radius: 12px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .search-results-bar p { font-size: 14px; color: #334155; margin: 0; }
+  .search-results-bar strong { color: #1a1a1a; }
+  .search-clear-btn {
+    background: white; border: 1px solid #c8dcff; color: #1a6bff;
+    padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .search-clear-btn:hover { background: #f0f4ff; }
+
   /* Skeleton */
   .skeleton-card { border-radius: 16px; overflow: hidden; border: 1px solid #f0f0f0; }
   .skeleton-img { height: 220px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
@@ -142,6 +157,10 @@ function SkeletonCard() {
 
 export default function DestinationsPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = readSearchFromParams(searchParams);
+  const noResultsFromSearch = searchParams.get("none") === "1";
+
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -158,12 +177,29 @@ export default function DestinationsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const filtered = destinations.filter((d) => {
+  const hasSearch = Boolean(search.query || search.date || search.maxBudget != null);
+  const afterSearch = filterDestinations(destinations, {
+    query: search.query,
+    maxBudget: search.maxBudget,
+    fromDate: search.date,
+  });
+
+  const filtered = afterSearch.filter((d) => {
     if (activeFilter === "All") return true;
     if (activeFilter === "Trekking") return d.difficulty && d.difficulty !== "Easy";
     if (activeFilter === "Cultural") return d.name.toLowerCase().includes("cultural") || d.name.toLowerCase().includes("kathmandu");
     return d.difficulty && d.difficulty.toLowerCase().includes(activeFilter.toLowerCase());
   });
+
+  const clearSearch = () => {
+    setSearchParams({});
+    setActiveFilter("All");
+  };
+
+  const searchSummaryParts = [];
+  if (search.query) searchSummaryParts.push(`“${search.query}”`);
+  if (search.date) searchSummaryParts.push(`from ${search.date}`);
+  if (search.maxBudget != null) searchSummaryParts.push(`under $${search.maxBudget}`);
 
   return (
     <>
@@ -216,7 +252,20 @@ export default function DestinationsPage() {
 
       {/* CONTENT */}
       <div className="dest-content">
-        {!loading && !error && (
+        {!loading && !error && hasSearch && (
+          <div className="search-results-bar">
+            <p>
+              {filtered.length > 0 ? (
+                <>Showing <strong>{filtered.length}</strong> trip{filtered.length !== 1 ? "s" : ""} for {searchSummaryParts.join(" · ")}</>
+              ) : (
+                <>No trips match {searchSummaryParts.join(" · ")}. Try adjusting your search.</>
+              )}
+            </p>
+            <button type="button" className="search-clear-btn" onClick={clearSearch}>Clear search</button>
+          </div>
+        )}
+
+        {!loading && !error && !hasSearch && (
           <p className="dest-count">
             Showing <span>{filtered.length}</span> destination{filtered.length !== 1 ? "s" : ""}
           </p>
@@ -241,8 +290,14 @@ export default function DestinationsPage() {
           <div className="error-wrap">
             <div className="error-icon">🔍</div>
             <div className="error-title">No destinations found</div>
-            <div className="error-msg">Try a different filter.</div>
-            <button className="retry-btn" onClick={() => setActiveFilter("All")}>Show all</button>
+            <div className="error-msg">
+              {hasSearch || noResultsFromSearch
+                ? "Try a different destination name, budget, or date."
+                : "Try a different filter."}
+            </div>
+            <button className="retry-btn" onClick={hasSearch ? clearSearch : () => setActiveFilter("All")}>
+              {hasSearch ? "Clear search" : "Show all"}
+            </button>
           </div>
         )}
 
@@ -255,10 +310,15 @@ export default function DestinationsPage() {
                 onClick={() => navigate(`/destinations/${d.id}`)}
               >
                 <div className="dest-card-img">
-                  <img src={d.image} alt={d.name} loading="lazy"/>
+                  <img
+                    src={d.image}
+                    alt={d.name}
+                    loading="lazy"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = destinationImageFallback(d.category); }}
+                  />
                   <div className="dest-card-overlay"/>
                   <span className="dest-card-tag">{d.difficulty || "Adventure"}</span>
-                  <span className="dest-card-price-badge">From ${d.price.toLocaleString()}</span>
+                  <span className="dest-card-price-badge">From ${(d.priceFrom ?? d.price).toLocaleString()}</span>
                 </div>
                 <div className="dest-card-body">
                   <div className="dest-card-meta">
