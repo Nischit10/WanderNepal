@@ -48,6 +48,20 @@ class BookingTests(TestCase):
         self.assertEqual(booking.user, self.user)
         self.assertEqual(booking.destination, self.destination)
 
+    def test_get_bookings_list(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        Booking.objects.create(
+            user=self.user,
+            destination=self.destination,
+            start_date=date.today() + timedelta(days=1),
+            end_date=date.today() + timedelta(days=2),
+            total_price=50.00
+        )
+        url = reverse('bookings')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
     def test_create_booking_unauthorized(self):
         data = {
             'destinationId': self.destination.id,
