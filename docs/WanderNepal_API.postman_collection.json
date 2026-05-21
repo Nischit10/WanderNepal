@@ -1,0 +1,592 @@
+{
+	"info": {
+		"_postman_id": "a6b7c8d9-e1f2-4g5h-6i7j-8k9l0m1n2o3p",
+		"name": "WanderNepal API",
+		"description": "API documentation for WanderNepal project.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"confirm_password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/signup/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"signup",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "User Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"full_name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"confirm_password\": \"password123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/signup/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"signup",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"message\": \"User created successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Signin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/signin/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"signin",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Login Successful",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/signin/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"signin",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"token\": \"9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b\",\n    \"user_id\": 1,\n    \"email\": \"john@example.com\",\n    \"full_name\": \"John Doe\",\n    \"message\": \"Login successful\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Destinations",
+			"item": [
+				{
+					"name": "List Destinations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/destinations/?category=Trekking&search=Everest",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"destinations",
+								""
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "Trekking"
+								},
+								{
+									"key": "search",
+									"value": "Everest"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Destinations List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/destinations/?category=Trekking&search=Everest",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"destinations",
+										""
+									],
+									"query": [
+										{
+											"key": "category",
+											"value": "Trekking"
+										},
+										{
+											"key": "search",
+											"value": "Everest"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"count\": 1,\n    \"next\": null,\n    \"previous\": null,\n    \"results\": [\n        {\n            \"id\": 1,\n            \"name\": \"Everest Base Camp\",\n            \"city\": \"Solu Khumbu\",\n            \"country\": \"Nepal\",\n            \"description\": \"The legendary trek to the base of the world's highest peak.\",\n            \"image_url\": \"https://example.com/everest.jpg\",\n            \"price_per_night\": \"150.00\",\n            \"category\": \"Trekking\",\n            \"rating\": 4.9\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Destination Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/destinations/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"destinations",
+								"1",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Destination Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/destinations/1/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"destinations",
+										"1",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"name\": \"Everest Base Camp\",\n    \"city\": \"Solu Khumbu\",\n    \"country\": \"Nepal\",\n    \"description\": \"The legendary trek to the base of the world's highest peak.\",\n    \"image_url\": \"https://example.com/everest.jpg\",\n    \"price_per_night\": \"150.00\",\n    \"category\": \"Trekking\",\n    \"rating\": 4.9\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"destinationId\": 1,\n    \"startDate\": \"2026-06-01\",\n    \"endDate\": \"2026-06-05\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Booking Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"destinationId\": 1,\n    \"startDate\": \"2026-06-01\",\n    \"endDate\": \"2026-06-05\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/bookings/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"bookings",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"destinationId\": 1,\n    \"destinationName\": \"Everest Base Camp\",\n    \"startDate\": \"2026-06-01\",\n    \"endDate\": \"2026-06-05\",\n    \"totalPrice\": \"600.00\",\n    \"status\": \"PENDING\",\n    \"created_at\": \"2026-05-20T23:05:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "My Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/me/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"me",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "My Bookings List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/bookings/me/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"bookings",
+										"me",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": 1,\n        \"destinationId\": 1,\n        \"destinationName\": \"Everest Base Camp\",\n        \"startDate\": \"2026-06-01\",\n        \"endDate\": \"2026-06-05\",\n        \"totalPrice\": \"600.00\",\n        \"status\": \"PENDING\",\n        \"created_at\": \"2026-05-20T23:05:00Z\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Booking Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Booking Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/bookings/1/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"bookings",
+										"1",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"destinationId\": 1,\n    \"destinationName\": \"Everest Base Camp\",\n    \"startDate\": \"2026-06-01\",\n    \"endDate\": \"2026-06-05\",\n    \"totalPrice\": \"600.00\",\n    \"status\": \"PENDING\",\n    \"created_at\": \"2026-05-20T23:05:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/1/cancel/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								"cancel",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Booking Cancelled",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/bookings/1/cancel/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"bookings",
+										"1",
+										"cancel",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"destinationId\": 1,\n    \"destinationName\": \"Everest Base Camp\",\n    \"startDate\": \"2026-06-01\",\n    \"endDate\": \"2026-06-05\",\n    \"totalPrice\": \"600.00\",\n    \"status\": \"CANCELLED\",\n    \"created_at\": \"2026-05-20T23:05:00Z\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Navigation",
+			"item": [
+				{
+					"name": "Get Navigation Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/navigation/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"navigation",
+								"1",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Navigation Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/navigation/1/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"navigation",
+										"1",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"startPoint\": \"Kathmandu\",\n    \"waypoints\": \"Lukla, Namche Bazaar\",\n    \"endPoint\": \"Everest Base Camp\",\n    \"estimatedTimeMinutes\": 10080,\n    \"distanceKm\": 65.0\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_token_here",
+			"type": "string"
+		}
+	]
+}
