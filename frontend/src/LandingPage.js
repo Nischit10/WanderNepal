@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import { getDestinations } from "./services/api";
+import Footer from "./components/Footer";
+import { getDestinations, destinationImageFallback } from "./services/api";
+import { findDestinationId } from "./config/footerDestinations";
+import { filterDestinations, parseBudget, buildSearchParams } from "./utils/destinationSearch";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
@@ -46,7 +49,8 @@ const styles = `
   }
   .hero-subtitle { font-size: 15px; color: rgba(255,255,255,0.82); line-height: 1.75; margin-bottom: 36px; max-width: 460px; font-weight: 400; }
 
-  .search-bar {
+  .search-bar,
+  form.search-bar {
     display: flex; align-items: center;
     background: white; border-radius: 50px;
     padding: 6px 6px 6px 20px;
@@ -59,6 +63,9 @@ const styles = `
   .search-input { border: none; outline: none; font-size: 13px; color: #1a1a1a; background: transparent; font-family: 'Inter', sans-serif; }
   .search-btn { background: #1a6bff; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .search-btn:hover { background: #0055ee; }
+  .search-bar-form { display: flex; align-items: center; flex: 1; max-width: 560px; }
+  .search-hint { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 10px; max-width: 560px; }
+  .search-hint.error { color: #ffb4b4; }
 
   .section { padding: 80px 60px; max-width: 1200px; margin: 0 auto; }
   .section-eyebrow { font-size: 12px; font-weight: 600; color: #1a6bff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
@@ -246,29 +253,79 @@ const destinations = [
   { id: "mustang", name: "Mustang", sub: "The Forbidden Kingdom", tag: "Remote", size: "small" },
 ];
 
-const experiences = [
-  { type: "basecamp", tag: "Trek", name: "Everest Base Camp Trek", desc: "The ultimate trekking journey through Sherpa villages to the foot of the world.", rating: "4.9", reviews: "712", price: "$1,299" },
-  { type: "annapurna", tag: "Circuit", name: "Annapurna Sanctuary", desc: "Experience the natural amphitheater of towering Himalayan peaks and local hospitality.", rating: "4.8", reviews: "534", price: "$950" },
-  { type: "heritage", tag: "Cultural", name: "Cultural Heritage Tour", desc: "Explore the UNESCO World Heritage sites of the Kathmandu Valley and spiritual Lumbini.", rating: "4.9", reviews: "6", price: "$780" },
+const EXPERIENCE_KEYS = [
+  { type: "basecamp", tag: "Trek", key: "everest", name: "Everest Base Camp Trek", desc: "The ultimate trekking journey through Sherpa villages to the foot of the world.", rating: "4.9", reviews: "712", priceFrom: 550 },
+  { type: "annapurna", tag: "Circuit", key: "annapurna", name: "Annapurna Circuit Trek", desc: "Classic Himalayan circuit through forests, high passes, and Annapurna views.", rating: "4.8", reviews: "534", priceFrom: 350 },
+  { type: "heritage", tag: "Cultural", key: "kathmandu", name: "Kathmandu Valley Heritage Tour", desc: "UNESCO World Heritage sites, temples, and living Newari culture.", rating: "4.9", reviews: "215", priceFrom: 90 },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
   const [featuredDests, setFeaturedDests] = useState([]);
+  const [allDests, setAllDests] = useState([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [featuredError, setFeaturedError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+  const [searchBudget, setSearchBudget] = useState("");
+  const [searchHint, setSearchHint] = useState("");
+
+  const today = new Date().toISOString().split("T")[0];
 
   const loadFeatured = () => {
     setFeaturedLoading(true);
     setFeaturedError(null);
     getDestinations()
-      .then(data => setFeaturedDests(data.slice(0, 6)))
+      .then(data => { setAllDests(data); setFeaturedDests(data.slice(0, 6)); })
       .catch(err => setFeaturedError(err.message || "Failed to load destinations"))
       .finally(() => setFeaturedLoading(false));
   };
 
   useEffect(() => { loadFeatured(); }, []);
+
+  const goExperience = (key) => {
+    const destId = findDestinationId(allDests, key);
+    if (destId) navigate(`/destinations/${destId}`);
+    else navigate("/destinations");
+  };
+
+  const handleHeroSearch = (e) => {
+    e.preventDefault();
+    setSearchHint("");
+
+    if (!searchQuery.trim() && !searchDate && !searchBudget.trim()) {
+      setSearchHint("Enter a destination, date, or budget to search.");
+      return;
+    }
+
+    if (allDests.length === 0) {
+      navigate("/destinations");
+      return;
+    }
+
+    const criteria = {
+      query: searchQuery,
+      maxBudget: parseBudget(searchBudget),
+      fromDate: searchDate,
+    };
+    const matches = filterDestinations(allDests, criteria);
+
+    if (matches.length === 0) {
+      const params = buildSearchParams({ query: searchQuery, date: searchDate, budget: searchBudget });
+      navigate(`/destinations?${params.toString()}&none=1`);
+      return;
+    }
+
+    if (matches.length === 1) {
+      navigate(`/destinations/${matches[0].id}`, {
+        state: { preferredStartDate: searchDate, maxBudget: parseBudget(searchBudget) },
+      });
+      return;
+    }
+
+    const params = buildSearchParams({ query: searchQuery, date: searchDate, budget: searchBudget });
+    navigate(`/destinations?${params.toString()}`);
+  };
 
   return (
     <>
@@ -281,25 +338,54 @@ export default function LandingPage() {
         <div className="hero-content">
           <h1 className="hero-title">Explore the Beauty of Nepal</h1>
           <p className="hero-subtitle">Experience breathtaking trekking, ancient culture, and unforgettable landscapes — from the peaks of Everest to the jungles of Chitwan.</p>
-          <div className="search-bar">
+          <form className="search-bar search-bar-form" onSubmit={handleHeroSearch}>
             <div className="search-field">
               <span className="search-label">Destination</span>
-              <input className="search-input" placeholder="Where to go?"/>
+              <input
+                className="search-input"
+                placeholder="Where to go?"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchHint(""); }}
+                list="hero-dest-suggestions"
+                aria-label="Destination"
+              />
+              <datalist id="hero-dest-suggestions">
+                {allDests.map((d) => (
+                  <option key={d.id} value={d.name}>{d.city}, {d.country}</option>
+                ))}
+              </datalist>
             </div>
             <div className="search-field">
               <span className="search-label">Date</span>
-              <input className="search-input" placeholder="When?"/>
+              <input
+                className="search-input"
+                type="date"
+                min={today}
+                value={searchDate}
+                onChange={(e) => { setSearchDate(e.target.value); setSearchHint(""); }}
+                aria-label="Travel date"
+              />
             </div>
             <div className="search-field">
               <span className="search-label">Budget</span>
-              <input className="search-input" placeholder="Max budget"/>
+              <input
+                className="search-input"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Max budget ($)"
+                value={searchBudget}
+                onChange={(e) => { setSearchBudget(e.target.value); setSearchHint(""); }}
+                aria-label="Maximum budget in dollars"
+              />
             </div>
-            <button className="search-btn">
+            <button type="submit" className="search-btn" aria-label="Search trips">
               <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
               </svg>
             </button>
-          </div>
+          </form>
+          {searchHint && <p className={`search-hint${searchHint.includes("Enter") ? " error" : ""}`}>{searchHint}</p>}
         </div>
       </section>
 
@@ -335,7 +421,13 @@ export default function LandingPage() {
                 {featuredDests.map(d => (
                   <div key={d.id} className="exp-card" onClick={() => navigate(`/destinations/${d.id}`)} style={{ cursor: "pointer" }}>
                     <div className="exp-card-img">
-                      <img src={d.image} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                      <img
+                        src={d.image}
+                        alt={d.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        loading="lazy"
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = destinationImageFallback(d.category); }}
+                      />
                       <span className="exp-card-tag">{d.difficulty || "Adventure"}</span>
                     </div>
                     <div className="exp-card-body">
@@ -344,7 +436,7 @@ export default function LandingPage() {
                         <span className="exp-rating-text">{d.rating} ({d.reviews} reviews)</span>
                       </div>
                       <div className="exp-name">{d.name}</div>
-                      <div className="exp-desc">📍 {d.city} &bull; {d.duration} &bull; From ${d.price.toLocaleString()}</div>
+                      <div className="exp-desc">📍 {d.city} &bull; {d.duration} &bull; From ${(d.priceFrom ?? d.price).toLocaleString()}</div>
                       <div className="exp-footer">
                         <span style={{ fontSize: 13, color: "#888" }}>{d.difficulty}</span>
                         <span className="exp-link">View Details →</span>
@@ -370,8 +462,19 @@ export default function LandingPage() {
             <div style={{ width: 48, height: 3, background: "#1a6bff", margin: "12px auto 0", borderRadius: 2 }}/>
           </div>
           <div className="exp-grid">
-            {experiences.map((e) => (
-              <div key={e.name} className="exp-card">
+            {EXPERIENCE_KEYS.map((e) => (
+              <div
+                key={e.name}
+                className="exp-card"
+                onClick={() => {
+                  const destId = findDestinationId(allDests, e.key);
+                  if (destId) navigate(`/destinations/${destId}`);
+                  else navigate("/destinations");
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(ev) => ev.key === "Enter" && ev.currentTarget.click()}
+              >
                 <div className="exp-card-img">
                   <ExpIllustration type={e.type}/>
                   <span className="exp-card-tag">{e.tag}</span>
@@ -384,8 +487,8 @@ export default function LandingPage() {
                   <div className="exp-name">{e.name}</div>
                   <div className="exp-desc">{e.desc}</div>
                   <div className="exp-footer">
-                    <span className="exp-price">{e.price}</span>
-                    <a href="#" className="exp-link">View Details →</a>
+                    <span className="exp-price">From ${e.priceFrom}</span>
+                    <span className="exp-link">View Details →</span>
                   </div>
                 </div>
               </div>
@@ -393,7 +496,6 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
       <div id="cta">
         <div className="cta-banner">
           <div className="cta-banner-overlay"/>
@@ -402,50 +504,13 @@ export default function LandingPage() {
             <p className="cta-sub">Connect with our local travel experts and design your perfect Nepalese getaway.</p>
             <div className="cta-btns">
               <button className="cta-btn-primary" onClick={() => window.location.href = "/signup"}>Start Planning</button>
-              <button className="cta-btn-outline">Talk to Expert</button>
+              <button className="cta-btn-outline" onClick={() => navigate("/contact")}>Talk to Expert</button>
             </div>
           </div>
         </div>
       </div>
 
-      <footer>
-        <div className="footer-inner">
-          <div>
-            <div className="footer-logo">WanderNepal</div>
-            <p className="footer-tagline">Crafting authentic Nepalese experiences since 2018. We are your travel companions in the Himalayas.</p>
-          </div>
-          <div className="footer-col">
-            <h4>Destinations</h4>
-            <ul>
-              <li><a href="#">Kathmandu Valley</a></li>
-              <li><a href="#">Everest Region</a></li>
-              <li><a href="#">Annapurna Circuit</a></li>
-              <li><a href="#">Chitwan Safari</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h4>Company</h4>
-            <ul>
-              <li><a href="#">About Us</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms & Conditions</a></li>
-              <li><a href="#">Contact Us</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h4>Newsletter</h4>
-            <p style={{ fontSize: 13, color: "#888", marginBottom: 12, lineHeight: 1.6 }}>Stay updated with our latest offers and trekking tips.</p>
-            <div className="newsletter-row">
-              <input className="newsletter-input" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)}/>
-              <button className="newsletter-btn">Join</button>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 WanderNepal. All rights reserved.</span>
-          <div><a href="#">Privacy</a><a href="#">Terms</a></div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

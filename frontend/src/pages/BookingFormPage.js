@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getDestinationById, createBooking } from "../services/api";
 import Navbar from "../components/Navbar";
@@ -52,6 +52,7 @@ function getDays(start, end) {
 export default function BookingFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, authReady } = useAuth();
   const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,11 +64,17 @@ export default function BookingFormPage() {
 
   const today = new Date().toISOString().split("T")[0];
   const days = getDays(startDate, endDate);
-  const total = destination ? destination.price * days : 0;
+  const rate = destination ? (destination.pricePerNight ?? destination.price) : 0;
+  const total = rate * days;
 
   useEffect(() => {
     if (authReady && !isLoggedIn) navigate("/signin", { replace: true });
   }, [authReady, isLoggedIn, navigate]);
+
+  useEffect(() => {
+    const preferred = location.state?.preferredStartDate;
+    if (preferred && !startDate) setStartDate(preferred);
+  }, [location.state, startDate]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -85,7 +92,7 @@ export default function BookingFormPage() {
     setSubmitting(true);
     try {
       await createBooking({ destinationId: id, destinationName: destination.name, city: destination.city, image: destination.image, startDate, endDate, totalPrice: total });
-      navigate("/my-bookings");
+      navigate("/bookings");
     } catch (err) {
       setSubmitError(err.message || "Booking failed. Please try again.");
     } finally {
@@ -123,8 +130,8 @@ export default function BookingFormPage() {
               <p className="bf-dest-label">{d.difficulty} · {d.duration}</p>
               <h2 className="bf-dest-name">{d.name}</h2>
               <p className="bf-dest-loc">📍 {d.city}, {d.country}</p>
-              <span className="bf-price-val">${d.price.toLocaleString()}</span>
-              {" "}<span className="bf-price-note">per person / trip</span>
+              <span className="bf-price-val">${rate.toLocaleString()}</span>
+              {" "}<span className="bf-price-note">per night</span>
             </div>
           </div>
 
@@ -141,7 +148,7 @@ export default function BookingFormPage() {
               </div>
               <div className="bf-divider" />
               <div className="bf-total-row"><span className="bf-total-label">Duration</span><span className="bf-total-val">{days > 0 ? `${days} day${days !== 1 ? "s" : ""}` : "—"}</span></div>
-              <div className="bf-total-row"><span className="bf-total-label">Price per trip</span><span className="bf-total-val">${d.price.toLocaleString()}</span></div>
+              <div className="bf-total-row"><span className="bf-total-label">Rate per night</span><span className="bf-total-val">${rate.toLocaleString()}</span></div>
               <div className="bf-divider" />
               <div className="bf-total-row"><span className="bf-grand-label">Total</span><span className="bf-grand-val">{total > 0 ? `$${total.toLocaleString()}` : "—"}</span></div>
               {submitError && <div className="bf-error">{submitError}</div>}
