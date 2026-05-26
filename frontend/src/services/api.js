@@ -18,6 +18,7 @@ api.interceptors.request.use(
 const CATEGORY_META = {
   Culture: { nights: 5, difficulty: "Easy", maxElevation: "1,400m" },
   Adventure: { nights: 10, difficulty: "Challenging", maxElevation: "5,416m" },
+  Trekking: { nights: 12, difficulty: "Moderate", maxElevation: "5,545m" },
   Wildlife: { nights: 4, difficulty: "Easy", maxElevation: "300m" },
   Nature: { nights: 6, difficulty: "Moderate", maxElevation: "2,200m" },
   Religious: { nights: 4, difficulty: "Easy", maxElevation: "150m" },
@@ -32,6 +33,7 @@ const FALLBACK_IMAGES = {
   Wildlife: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
   Culture: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
   Adventure: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+  Trekking: "https://images.unsplash.com/photo-1585141940905-189f383f9824?w=800&q=80",
   Nature: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80",
   Religious: "https://images.unsplash.com/photo-1623062362573-057a66b262f1?w=800&q=80",
   History: "https://images.unsplash.com/photo-1536431311719-398b6704d4cc?w=800&q=80",
@@ -48,8 +50,9 @@ function galleryFor(category, primary) {
 }
 
 function parseApiError(err) {
-  const data = err.response?.data;
-  if (!data) return err.message || "Request failed";
+  if (!err.response) return err.message || "Network error. Is the backend running?";
+  const data = err.response.data;
+  if (!data) return `Request failed (${err.response.status})`;
   if (typeof data === "string") return data;
   if (data.detail) return data.detail;
   const first = Object.values(data)[0];
@@ -60,33 +63,34 @@ function parseApiError(err) {
 
 /** Map Django destination → frontend shape */
 export function mapDestination(d) {
+  if (!d) return null;
   const meta = metaFor(d.category);
-  const perNight = Number(d.price_per_night);
+  const perNight = Number(d.price_per_night) || 0;
   const nights = meta.nights;
   const image = d.image_url || FALLBACK_IMAGES[d.category] || FALLBACK_IMAGES.default;
   return {
     id: String(d.id),
-    name: d.name,
-    city: d.city,
-    country: d.country,
+    name: d.name || "Unnamed Trip",
+    city: d.city || "Nepal",
+    country: d.country || "Nepal",
     pricePerNight: perNight,
     price: perNight,
     priceFrom: Math.round(perNight * nights),
     duration: `${nights} Days`,
     difficulty: meta.difficulty,
-    category: d.category,
-    rating: d.rating,
-    reviews: Math.round(d.rating * 28),
+    category: d.category || "Adventure",
+    rating: d.rating || 5.0,
+    reviews: Math.round((d.rating || 5.0) * 28),
     image,
     images: galleryFor(d.category, image),
-    description: d.description,
+    description: d.description || "",
     maxElevation: meta.maxElevation,
     groupSize: "2–12 People",
     bestSeason: "Mar–May, Oct–Nov",
-    accommodation: d.category === "Adventure" ? "Teahouse" : "Hotel / Lodge",
+    accommodation: (d.category === "Adventure" || d.category === "Trekking") ? "Teahouse" : "Hotel / Lodge",
     highlights: [
-      { icon: "🏔️", title: d.category, desc: `Explore ${d.city} with local guides.` },
-      { icon: "📍", title: "Highlights", desc: d.description.slice(0, 120) + (d.description.length > 120 ? "…" : "") },
+      { icon: "🏔️", title: d.category || "Trip", desc: `Explore ${d.city || "Nepal"} with local guides.` },
+      { icon: "📍", title: "Highlights", desc: (d.description || "").slice(0, 120) + ((d.description || "").length > 120 ? "…" : "") },
     ],
     related: [],
   };
@@ -104,20 +108,21 @@ function mapBooking(b, destinationsById = {}) {
     startDate: b.startDate,
     endDate: b.endDate,
     status: b.status || "CONFIRMED",
-    totalPrice: Number(b.totalPrice),
+    totalPrice: Number(b.totalPrice) || 0,
   };
 }
 
 function mapNavigation(nav) {
+  if (!nav) return null;
   let waypoints = nav.waypoints || [];
   if (typeof waypoints === "string") {
     waypoints = waypoints.split(",").map((s) => s.trim()).filter(Boolean);
   }
   return {
-    startPoint: nav.startPoint,
+    startPoint: nav.startPoint || "Kathmandu",
     waypoints: waypoints,
-    endPoint: nav.endPoint,
-    distanceKm: nav.distanceKm,
+    endPoint: nav.endPoint || "Destination",
+    distanceKm: nav.distanceKm || 0,
     estimatedHours: Math.round((nav.estimatedTimeMinutes || 0) / 60),
   };
 }
@@ -127,25 +132,33 @@ function mapNavigation(nav) {
 // ---------------------------------------------------------------------------
 
 export async function getDestinations() {
-  const res = await api.get("/api/destinations/");
-  const results = res.data.results || res.data || [];
-  const list = results.map(mapDestination);
-  list.forEach((d, i, arr) => {
-    d.related = arr.filter((x) => x.id !== d.id).slice(0, 3).map((x) => x.id);
-  });
-  return list;
+  try {
+    const res = await api.get("/api/destinations/");
+    const results = Array.isArray(res.data) ? res.data : (res.data.results || []);
+    const list = results.map(mapDestination).filter(Boolean);
+    list.forEach((d, i, arr) => {
+      d.related = arr.filter((x) => x.id !== d.id).slice(0, 3).map((x) => x.id);
+    });
+    return list;
+  } catch (err) {
+    throw new Error(parseApiError(err));
+  }
 }
 
 export async function getDestinationById(id) {
-  const res = await api.get(`/api/destinations/${id}/`);
-  const dest = mapDestination(res.data);
   try {
-    const all = await getDestinations();
-    dest.related = all.filter((x) => x.id !== dest.id).slice(0, 3).map((x) => x.id);
-  } catch {
-    dest.related = [];
+    const res = await api.get(`/api/destinations/${id}/`);
+    const dest = mapDestination(res.data);
+    try {
+      const all = await getDestinations();
+      dest.related = all.filter((x) => x.id !== dest.id).slice(0, 3).map((x) => x.id);
+    } catch {
+      dest.related = [];
+    }
+    return dest;
+  } catch (err) {
+    throw Object.assign(new Error(parseApiError(err)), { status: err.response?.status });
   }
-  return dest;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,29 +180,56 @@ export async function createBooking(payload) {
 }
 
 export async function getMyBookings() {
-  const [bookRes, destRes] = await Promise.all([
-    api.get("/api/bookings/me/"),
-    api.get("/api/destinations/"),
-  ]);
-  const byId = {};
-  const destResults = destRes.data.results || destRes.data || [];
-  destResults.forEach((d) => {
-    byId[String(d.id)] = mapDestination(d);
-  });
-  return (bookRes.data || []).map((b) => mapBooking(b, byId));
+  try {
+    const [bookRes, destRes] = await Promise.allSettled([
+      api.get("/api/bookings/me/"),
+      api.get("/api/destinations/"),
+    ]);
+
+    const byId = {};
+    if (destRes.status === "fulfilled") {
+      const destData = destRes.value.data;
+      const destResults = Array.isArray(destData) ? destData : (destData.results || []);
+      destResults.forEach((d) => {
+        byId[String(d.id)] = mapDestination(d);
+      });
+    }
+
+    if (bookRes.status === "rejected") {
+      throw bookRes.reason;
+    }
+
+    const bookings = bookRes.value.data || [];
+    return bookings.map((b) => mapBooking(b, byId));
+  } catch (err) {
+    throw new Error(parseApiError(err));
+  }
 }
 
 export async function getBookingById(id) {
-  const [bookRes, destRes] = await Promise.all([
-    api.get(`/api/bookings/${id}/`),
-    api.get("/api/destinations/"),
-  ]);
-  const byId = {};
-  const destResults = destRes.data.results || destRes.data || [];
-  destResults.forEach((d) => {
-    byId[String(d.id)] = mapDestination(d);
-  });
-  return mapBooking(bookRes.data, byId);
+  try {
+    const [bookRes, destRes] = await Promise.allSettled([
+      api.get(`/api/bookings/${id}/`),
+      api.get("/api/destinations/"),
+    ]);
+
+    const byId = {};
+    if (destRes.status === "fulfilled") {
+      const destData = destRes.value.data;
+      const destResults = Array.isArray(destData) ? destData : (destData.results || []);
+      destResults.forEach((d) => {
+        byId[String(d.id)] = mapDestination(d);
+      });
+    }
+
+    if (bookRes.status === "rejected") {
+      throw bookRes.reason;
+    }
+
+    return mapBooking(bookRes.value.data, byId);
+  } catch (err) {
+    throw Object.assign(new Error(parseApiError(err)), { status: err.response?.status });
+  }
 }
 
 export async function cancelBooking(id) {
