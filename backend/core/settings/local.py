@@ -1,27 +1,23 @@
 from .base import *
 
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-it(*gn%)4sbh@9m8p2j3b*!rcxr3n@z=1&6_b5%d=5%7jmt%72'
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
-# SQLite — no MySQL needed locally
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nepal_sanctuary',
+        'USER': 'root',          # Your MySQL username
+        'PASSWORD': '8778',  # Your MySQL password
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
-}
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# CORS — local dev only: allow browser from any origin (DEBUG is True above).
-CORS_ALLOW_ALL_ORIGINS = True
-
-# DRF Token Auth
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
 }

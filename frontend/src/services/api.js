@@ -109,9 +109,13 @@ function mapBooking(b, destinationsById = {}) {
 }
 
 function mapNavigation(nav) {
+  let waypoints = nav.waypoints || [];
+  if (typeof waypoints === "string") {
+    waypoints = waypoints.split(",").map((s) => s.trim()).filter(Boolean);
+  }
   return {
     startPoint: nav.startPoint,
-    waypoints: nav.waypoints || [],
+    waypoints: waypoints,
     endPoint: nav.endPoint,
     distanceKm: nav.distanceKm,
     estimatedHours: Math.round((nav.estimatedTimeMinutes || 0) / 60),
@@ -124,7 +128,8 @@ function mapNavigation(nav) {
 
 export async function getDestinations() {
   const res = await api.get("/api/destinations/");
-  const list = (res.data || []).map(mapDestination);
+  const results = res.data.results || res.data || [];
+  const list = results.map(mapDestination);
   list.forEach((d, i, arr) => {
     d.related = arr.filter((x) => x.id !== d.id).slice(0, 3).map((x) => x.id);
   });
@@ -167,7 +172,8 @@ export async function getMyBookings() {
     api.get("/api/destinations/"),
   ]);
   const byId = {};
-  (destRes.data || []).forEach((d) => {
+  const destResults = destRes.data.results || destRes.data || [];
+  destResults.forEach((d) => {
     byId[String(d.id)] = mapDestination(d);
   });
   return (bookRes.data || []).map((b) => mapBooking(b, byId));
@@ -179,7 +185,8 @@ export async function getBookingById(id) {
     api.get("/api/destinations/"),
   ]);
   const byId = {};
-  (destRes.data || []).forEach((d) => {
+  const destResults = destRes.data.results || destRes.data || [];
+  destResults.forEach((d) => {
     byId[String(d.id)] = mapDestination(d);
   });
   return mapBooking(bookRes.data, byId);

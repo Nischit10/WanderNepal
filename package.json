@@ -5,8 +5,8 @@
     "kill-ports": "kill-port 8000 3000",
     "predev": "npm run kill-ports",
     "dev": "concurrently -n api,web -c blue,green \"npm run start:api\" \"npm run start:web\"",
-    "start:api": "cd backend && python3 manage.py runserver 127.0.0.1:8000",
-    "start:web": "cd frontend && BROWSER=none npm start"
+    "start:api": "venv\\Scripts\\python.exe backend\\manage.py runserver 127.0.0.1:8000",
+    "start:web": "cd frontend && npm start"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
