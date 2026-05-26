@@ -39,7 +39,11 @@ Navigate to the project root:
     cd backend
     python manage.py migrate
     ```
-5.  **Seed Data (Optional)**:
+5.  **Create a Superuser** (For admin access):
+    ```bash
+    python manage.py createsuperuser
+    ```
+6.  **Seed Data (Optional)**:
     ```bash
     python manage.py seed_destinations
     python manage.py seed_navigation
