@@ -1,0 +1,31 @@
+# Virtual environment
+venv/
+.venv/
+env/
+bin/
+include/
+lib/
+share/
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Django
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+static/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.DS_Store
